@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16
+    container_name: fire-db
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-appdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer:latest
+    container_name: fire-adminer
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      # Adminer uses 8080 in its official image; we expose as-is.
+      # Access via http://localhost:8080
+      ADMINER_DEFAULT_SERVER: db
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fire-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # ensure Flask sees DATABASE_URL etc.
+      DOCKER: "1"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "5005:5005"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: node:20-alpine
+    container_name: fire-frontend
+    working_dir: /usr/src/app
+    environment:
+      DOCKER: "1"
+    volumes:
+      - ./frontend:/usr/src/app
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

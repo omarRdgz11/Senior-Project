@@ -1,0 +1,8 @@
+.git
+.gitignore
+.DS_Store
+node_modules
+__pycache__
+*.pyc
+.venv
+docker-data
