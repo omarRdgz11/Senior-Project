@@ -11,14 +11,14 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.13",
+    "daisyui": "^5.1.13",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.1",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
-    "@skeletonlabs/skeleton": "^3.2.0",
-    "@skeletonlabs/skeleton-react": "^1.4.0",
     "@types/node": "^24.3.3",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
