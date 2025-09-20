@@ -67,3 +67,53 @@ export default tseslint.config([
   },
 ])
 ```
+
+# Frontend (React + Vite + Tailwind v4 + daisyUI)
+
+Single-page app for the Fire (FIRMS) Detection project.  
+Runs on Vite (port 5173) and talks to the backend via `/api` (proxied to Flask on 5005).
+
+---
+
+## Tech stack
+
+- React 19 + React Router
+- Vite 7
+- Tailwind CSS v4
+- daisyUI (Tailwind component library & themes)
+- Dev proxy to backend at `/api` (configured in `vite.config.ts`)
+- Works in Docker or locally (Node 18+ recommended; Node 20+ ideal)
+
+---
+
+## Directory structure
+
+frontend/
+├─ README.md
+├─ package.json
+├─ vite.config.ts                # Vite + @tailwindcss/vite + React; /api proxy
+├─ index.html                    # sets default daisyUI theme via data-theme
+├─ tailwind.config.js            # Tailwind (ESM) + optional daisyUI plugin
+└─ src/
+   ├─ index.css                  # Tailwind v4 + @plugin "daisyui"; minimal globals
+   ├─ main.tsx                   # React bootstrap; RouterProvider
+   ├─ vite-env.d.ts
+   │
+   ├─ routes/
+   │  └─ app-routes.tsx          # createBrowserRouter + nested routes
+   │
+   ├─ layouts/
+   │  └─ AppShell.tsx            # navbar + <Outlet/> + footer; daisyUI tokens
+   │
+   ├─ components/
+   │  └─ Page.tsx                # simple page wrapper (optional)
+   │
+   └─ pages/
+      ├─ Home/
+      │  └─ HomePage.tsx
+      └─ About/
+         ├─ AboutPage.tsx
+         └─ People/
+            ├─ Omar.tsx
+            └─ Teammate.tsx
+            └─ Teammate.tsx
