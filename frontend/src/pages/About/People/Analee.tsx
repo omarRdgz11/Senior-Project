@@ -2,7 +2,7 @@ export default function Analee() {
     return (
       <div className="card bg-base-100 border border-base-200 shadow">
         <div className="card-body space-y-3">
-          <h1 className="card-title">Omar</h1>
+          <h1 className="card-title">Analee</h1>
           <p className="text-base-content/70">
             Hey Everyone! I am working with data and databases for this project.
           </p>
