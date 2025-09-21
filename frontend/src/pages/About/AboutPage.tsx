@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 const people = [
   { name: "Omar", role: "Developer", path: "/about/people/omar" },
   { name: "Teammate", role: "Contributor", path: "/about/people/teammate" },
+  { name: "Linh", role: "Developer", path: "/about/people/linh" },
   // Add more { name, role, path } as new files are created
 ];
 

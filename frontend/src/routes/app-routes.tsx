@@ -6,6 +6,7 @@ import HomePage from "../pages/Home/HomePage";
 import AboutPage from "../pages/About/AboutPage";
 import Omar from "../pages/About/People/Omar";
 import Teammate from "../pages/About/People/Teammate";
+import Linh from "../pages/About/People/Linh";
 // Add more imports as new teammates create files
 
 const NotFound = () => (
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
       // People profiles (one route per file under About/People)
       { path: "about/people/omar", element: <Omar /> },
       { path: "about/people/teammate", element: <Teammate /> },
+      { path: "about/people/linh", element: <Linh /> },
 
       { path: "*", element: <NotFound /> },
     ],
