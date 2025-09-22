@@ -5,6 +5,7 @@ import AppShell from "../layouts/AppShell";
 import HomePage from "../pages/Home/HomePage";
 import AboutPage from "../pages/About/AboutPage";
 import Omar from "../pages/About/People/Omar";
+import Linh from "../pages/About/People/Linh";
 
 // Add more imports as new teammates create files
 
@@ -25,7 +26,7 @@ export const router = createBrowserRouter([
 
       // People profiles (one route per file under About/People)
       { path: "about/people/omar", element: <Omar /> },
-
+      { path: "about/people/linh", element: <Linh /> },
 
       { path: "*", element: <NotFound /> },
     ],
