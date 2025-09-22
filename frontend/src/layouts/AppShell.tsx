@@ -8,6 +8,7 @@ export default function AppShell() {
           <NavLink to="/" className="font-semibold mr-2">Fire Detection System</NavLink>
           <div className="ml-auto flex items-center gap-1">
             <NavLink to="/" className="btn btn-ghost normal-case text-sm font-medium">Home</NavLink>
+            <NavLink to="/WildfireMap" className="btn btn-ghost normal-case text-sm font-medium">Map</NavLink>
             <NavLink to="/about" className="btn btn-ghost normal-case text-sm font-medium">About</NavLink>
           </div>
         </div>
