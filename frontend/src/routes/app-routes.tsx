@@ -6,7 +6,7 @@ import HomePage from "../pages/Home/HomePage";
 import AboutPage from "../pages/About/AboutPage";
 import Omar from "../pages/About/People/Omar";
 import Linh from "../pages/About/People/Linh";
-
+import WildfireMapPage from "../pages/WildfireMap";
 // Add more imports as new teammates create files
 
 const NotFound = () => (
@@ -22,6 +22,7 @@ export const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <HomePage /> },            // "/"
+      { path: "WildfireMap", element: <WildfireMapPage /> },         // /WildfireMap
       { path: "about", element: <AboutPage /> },         // "/about"
 
       // People profiles (one route per file under About/People)
