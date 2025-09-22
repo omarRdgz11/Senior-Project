@@ -24,11 +24,31 @@ senior-project/
 │        └─ hello.py           # GET/POST /api/hello
 │
 └─ frontend/
-   ├─ index.html
+   ├─ README.md
    ├─ package.json
-   ├─ vite.config.ts           # proxy '/api' → backend:5005 (container) or localhost:5005
-   │
+   ├─ vite.config.ts                # Vite + @tailwindcss/vite + React; /api proxy
+   ├─ index.html                    # sets default daisyUI theme via data-theme
+   ├─ tailwind.config.js            # Tailwind (ESM) + optional daisyUI plugin
    └─ src/
-      ├─ main.tsx
-      ├─ App.tsx               # simple UI to hit ping / db-health / hello
-      └─ index.css             # `@import "tailwindcss";`
+      ├─ index.css                  # Tailwind v4 + @plugin "daisyui"; minimal globals
+      ├─ main.tsx                   # React bootstrap; RouterProvider
+      ├─ vite-env.d.ts
+      │
+      ├─ routes/
+      │  └─ app-routes.tsx          # createBrowserRouter + nested routes
+      │
+      ├─ layouts/
+      │  └─ AppShell.tsx            # navbar + <Outlet/> + footer; daisyUI tokens
+      │
+      ├─ components/
+      │  └─ Page.tsx                # simple page wrapper (optional)
+      │
+      └─ pages/
+         ├─ Home/
+         │  └─ HomePage.tsx
+         └─ About/
+            ├─ AboutPage.tsx
+            └─ People/
+               ├─ Omar.tsx
+               └─ Teammate.tsx
+               └─ Teammate.tsx            # `@import "tailwindcss";`
