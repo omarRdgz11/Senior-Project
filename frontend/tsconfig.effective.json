@@ -1,0 +1,58 @@
+﻿{
+    "compilerOptions": {
+        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+        "target": "es2022",
+        "useDefineForClassFields": true,
+        "lib": [
+            "es2022",
+            "dom",
+            "dom.iterable"
+        ],
+        "module": "esnext",
+        "skipLibCheck": true,
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "verbatimModuleSyntax": true,
+        "moduleDetection": "force",
+        "noEmit": true,
+        "jsx": "react-jsx",
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "erasableSyntaxOnly": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedSideEffectImports": true,
+        "isolatedModules": true,
+        "allowSyntheticDefaultImports": true,
+        "resolvePackageJsonExports": true,
+        "resolvePackageJsonImports": true,
+        "resolveJsonModule": true,
+        "preserveConstEnums": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "strictBuiltinIteratorReturn": true,
+        "alwaysStrict": true,
+        "useUnknownInCatchVariables": true
+    },
+    "files": [
+        "./src/App.tsx",
+        "./src/main.tsx",
+        "./src/vite-env.d.ts",
+        "./src/components/Page.tsx",
+        "./src/layouts/AppShell.tsx",
+        "./src/pages/WildfireMap.tsx",
+        "./src/pages/About/AboutPage.tsx",
+        "./src/pages/About/People/Analee.tsx",
+        "./src/pages/About/People/Linh.tsx",
+        "./src/pages/About/People/Omar.tsx",
+        "./src/pages/Home/HomePage.tsx",
+        "./src/routes/app-routes.tsx"
+    ],
+    "include": [
+        "src"
+    ]
+}
