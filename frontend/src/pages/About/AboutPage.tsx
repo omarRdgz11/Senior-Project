@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 
 const people = [
-  { name: "Omar", role: "Developer", path: "/about/people/omar" },
-  { name: "Teammate", role: "Contributor", path: "/about/people/teammate" },
+  { name: "Analee", role: "Developer", path: "/about/people/analee"},
   { name: "Linh", role: "Developer", path: "/about/people/linh" },
+  { name: "Omar", role: "Developer", path: "/about/people/omar" },
+  
   // Add more { name, role, path } as new files are created
 ];
 
@@ -23,10 +24,10 @@ export default function AboutPage() {
             <a className="btn btn-primary btn-sm" href="http://localhost:5173" target="_blank" rel="noreferrer">
               Frontend
             </a>
-            <a className="btn btn-outline btn-sm" href="http://localhost:5005/api/ping" target="_blank" rel="noreferrer">
-              Backend /api/ping
+            <a className="btn btn-primary btn-sm" href="http://localhost:5005/api/ping" target="_blank" rel="noreferrer">
+              Backend (API: Ping)
             </a>
-            <a className="btn btn-ghost btn-sm" href="http://localhost:8080" target="_blank" rel="noreferrer">
+            <a className="btn btn-primary btn-sm" href="http://localhost:8080" target="_blank" rel="noreferrer">
               Adminer
             </a>
           </div>
