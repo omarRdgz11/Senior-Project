@@ -11,6 +11,7 @@ export default function HomePage() {
           <Link to="/about" className="btn btn-primary">About</Link>
           {/* sample personal page route */}
           <Link to="/wildfiremap" className="btn btn-primary">Map</Link>
+          <Link to="/testrawdetections" className="btn btn-primary">Raw Detections — API Test</Link>
         </div>
       </div>
     </div>
