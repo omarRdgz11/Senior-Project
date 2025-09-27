@@ -10,6 +10,7 @@ export default function AppShell() {
             <NavLink to="/" className="btn btn-ghost normal-case text-sm font-medium">Home</NavLink>
             <NavLink to="/WildfireMap" className="btn btn-ghost normal-case text-sm font-medium">Map</NavLink>
             <NavLink to="/about" className="btn btn-ghost normal-case text-sm font-medium">About</NavLink>
+            <NavLink to="/TestRawDetections" className="btn btn-ghost normal-case text -sm font-medium">Raw Detections — API Test</NavLink>
           </div>
         </div>
       </header>

@@ -26,10 +26,10 @@ def create_app():
 
 
     # >>> AUTO-CREATE TABLES (no migrations) <<<
-    # with app.app_context():
-    #     db.create_all()
+    with app.app_context():
+        db.create_all()
 
     register_routes(app)
     return app
 
-# app = create_app()
+app = create_app()
