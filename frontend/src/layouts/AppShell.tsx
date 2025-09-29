@@ -3,7 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 export default function AppShell() {
   return (
     <div className="min-h-screen bg-base-100 text-base-content">
-      <header className="navbar sticky top-0 z-40 border-b border-base-200 bg-base-100/80 backdrop-blur">
+      <header className="navbar relative top-0 z-50 border-b border-base-200 bg-base-100/80 backdrop-blur">
         <div className="container mx-auto flex items-center gap-2 px-4">
           <NavLink to="/" className="font-semibold mr-2">Fire Detection System</NavLink>
           <div className="ml-auto flex items-center gap-1">

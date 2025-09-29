@@ -37,3 +37,25 @@ export async function listRawDetections(
   }
   return res.json() as Promise<ListResponse>;
 }
+
+export async function fetchRawDetections(
+  params: Record<string, string | number | undefined> = {}
+): Promise<RawDetection[]> {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== "") qs.set(k, String(v));
+  });
+
+  const res = await fetch(`${BASE}/raw-detections?${qs.toString()}`);
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(
+      `HTTP ${res.status} ${res.statusText} ${
+        errText ? "- " + errText : ""
+      }`
+    );
+  }
+
+  const data = (await res.json()) as ListResponse;
+  return data.items;
+}
