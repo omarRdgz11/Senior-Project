@@ -7,7 +7,7 @@ export default function Linh() {
           {/* Picture */}
           <header className="flex flex-col items-center text-center gap-4">
             <img
-              src="/images/about-me/profile-pictures/" /* <- replace with your path */
+              src="/images/about-me/profile-pictures/linhProfilePicture.JPG" /* <- replace with your path */
               alt="Portrait of Linh"
               className="w-32 h-32 rounded-full shadow-md object-cover"
             />
@@ -23,7 +23,7 @@ export default function Linh() {
           <section aria-labelledby="about-summary" className="space-y-2">
             <h2 id="about-summary" className="text-xl font-semibold">Summary</h2>
             <p className="text-base-content/80">
-              Hi! I’m Linh
+              Hi! I’m Linh Huynh. I am a frontend developer for this project. I help design and implement the user interface and user experience of the website to ensure it is visually appealing, intuitive, and user-friendly.
             </p>
           </section>
 
@@ -37,7 +37,7 @@ export default function Linh() {
                 <h3 className="font-semibold mb-2">Internships</h3>
                 <ul className="list-disc list-inside space-y-1 text-base-content/80">
                   <li>
-                    <span className="font-medium">Example Text</span>
+                    <span className="font-medium">Mira Safety - Full Stack Development Intern</span>
                   </li>
                 </ul>
               </div>
@@ -47,13 +47,13 @@ export default function Linh() {
                 <h3 className="font-semibold mb-2">Projects</h3>
                 <ul className="list-disc list-inside space-y-1 text-base-content/80">
                   <li>
-                    <span className="font-medium">Sample Text</span> - Sample Text
+                    <span className="font-medium">Senior Project</span> - React, Flask, PostgreSQL, Docker
                   </li>
                   <li>
-                    <span className="font-medium">Sample Text</span> — Sample Text
+                    <span className="font-medium">PeerScribe</span> — Javascript, React, Node.js, Next.js, Express.js, Firebase
                   </li>
                   <li>
-                    <span className="font-medium">Sample Text</span> — Sample Text
+                    <span className="font-medium">Survival Gear Consultant App</span> — Expo, Supabase, React Native, Vitest
                   </li>
                 </ul>
               </div>
@@ -64,7 +64,7 @@ export default function Linh() {
           <section aria-labelledby="about-hobbies" className="space-y-2">
             <h2 id="about-hobbies" className="text-xl font-semibold">Hobbies</h2>
             <p className="text-base-content/80">
-              Sample Text
+              Reading, Traveling, Anime, Photography, Gaming
             </p>
           </section>
 
@@ -74,7 +74,7 @@ export default function Linh() {
             <div className="flex flex-wrap gap-2">
               <a
                 className="btn btn-outline btn-sm"
-                href="https://github.com/your-handle"
+                href="https://github.com/asterphine"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="GitHub profile"
@@ -83,7 +83,7 @@ export default function Linh() {
               </a>
               <a
                 className="btn btn-ghost btn-sm"
-                href="https://linkedin.com/in/your-handle"
+                href="https://www.linkedin.com/in/linh-m-huynh/"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="LinkedIn profile"
