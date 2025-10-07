@@ -1,72 +1,151 @@
 import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Rectangle } from "react-leaflet";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { fetchRawDetections, type RawDetection } from "../api/Map/Raw_Detections/rawDetections";
-import L from "leaflet";
+import FilterSidebar from "../components/Sidebar/FilterSidebar";
 
-// Define bounding boxes as Leaflet LatLngBounds
-const bounds = {
-  austin: [
-    [30.00, -98.10], // Southwest corner (lat, lon)
-    [30.60, -97.50], // Northeast corner (lat, lon)
-  ] as [[number, number], [number, number]],
-  central_tx: [
-    [28.50, -101.50],
-    [32.50, -96.50],
-  ] as [[number, number], [number, number]],
-  texas: [
-    [25.80, -106.65],
-    [36.50, -93.50],
-  ] as [[number, number], [number, number]],
-};
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
 
-// Custom fire icon
-const fireIcon = new L.Icon({
-  iconUrl: '/images/fire-icon.webp', // fire emoji icon
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32],
+// --- Custom Fire Icon ---
+const fireIcon = L.icon({
+  iconUrl: "/images/fire-icon.webp", // from public/images
+  iconSize: [28, 28],
+  iconAnchor: [14, 28],
+  popupAnchor: [0, -28],
 });
 
-export default function WildfireMap() {
+var topoLayer = L.tileLayer(
+  `https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
+  { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'}
+);
+
+var contoursLayer = L.tileLayer(
+  `https://api.maptiler.com/tiles/contours-v2/{z}/{x}/{y}.pbf?key=${MAPTILER_KEY}`,
+  { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>',
+    opacity: 1
+  }
+);
+
+var hillshadingLayer = L.tileLayer(
+  `https://api.maptiler.com/tiles/hillshade/{z}/{x}/{y}.webp?key=${MAPTILER_KEY}`,
+  { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'}
+);
+
+// --- Zoom Controller Hook ---
+function ZoomController({ zoom }: { zoom: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setZoom(zoom);
+  }, [zoom, map]);
+  return null;
+}
+
+export default function WildfireMapPage() {
   const [detections, setDetections] = useState<RawDetection[]>([]);
+  const [filtered, setFiltered] = useState<RawDetection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Filters
+  const [filters, setFilters] = useState({
+    dateRange: { start: "", end: "" },
+    confidence: "",
+    zoom: 10,
+  });
 
   useEffect(() => {
     async function loadDetections() {
       const data = await fetchRawDetections();
       setDetections(data);
+      setFiltered(data);
       setLoading(false);
     }
     loadDetections();
   }, []);
 
-  return (
-    <div className="h-[calc(100vh-80px)] w-full">
-      <MapContainer center={[30.2672, -97.7431]} zoom={7} className="h-full w-full">
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+  // Apply filters when user changes them
+  useEffect(() => {
+    if (!detections.length) return;
 
-        {/* Bounding boxes */}
-        <Rectangle bounds={bounds.austin} pathOptions={{ color: "red" }} />
-        <Rectangle bounds={bounds.central_tx} pathOptions={{ color: "orange" }} />
-        <Rectangle bounds={bounds.texas} pathOptions={{ color: "blue" }} />
+    let filteredData = [...detections];
 
-        {/* Show markers */}
-        {!loading &&
-          detections.map((fire) => (
-            <Marker key={fire.id} position={[fire.latitude, fire.longitude] } icon={fireIcon}>
-              <Popup>
-                <strong>Date:</strong> {fire.acq_date} <br />
-                <strong>Time:</strong> {fire.acq_time} <br />
-                <strong>Confidence:</strong> {fire.confidence} <br />
-                <strong>Brightness:</strong> {fire.bright_ti4} <br />
-              </Popup>
-            </Marker>
-          ))}
-      </MapContainer>
+    if (filters.confidence) {
+      filteredData = filteredData.filter(
+        (d) => d.confidence?.toLowerCase() === filters.confidence.toLowerCase()
+      );
+    }
+
+    if (
+      filters.dateRange &&
+      filters.dateRange.start &&
+      filters.dateRange.end
+    ) {
+      filteredData = filteredData.filter((d) => {
+        const date = new Date(d.acq_date);
+        return (
+          date >= new Date(filters.dateRange.start) &&
+          date <= new Date(filters.dateRange.end)
+        );
+      });
+    }
+
+    setFiltered(filteredData);
+  }, [filters, detections]);
+
+return (
+  <div className="relative h-[calc(100vh-64px)] overflow-hidden">
+      {/* Sidebar */}
+      {sidebarOpen && (
+        <div className="fixed top-[64px] right-0 w-72 h-[calc(100vh-64px)] bg-base-200 border-r border-base-300 z-40">
+          <FilterSidebar filters={filters} setFilters={setFilters} />
+        </div>
+      )}
+
+      {/* Toggle Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed bottom-3 right-3 z-[1000] bg-white border border-base-300 rounded-md px-2 py-1 text-sm shadow hover:bg-base-200 transition"
+      >
+        {sidebarOpen ? "← Hide" : "☰ Filters"}
+      </button>
+
+      {/* Map Section */}
+      <div
+        className="fixed top-[64px] h-[calc(100vh-64px)] left-0 w-full transition-all duration-300 ease-in-out"
+      >
+        <MapContainer
+          center={[30.2672, -97.7431]} // Austin
+          zoom={filters.zoom}
+          className="h-full w-full"
+          layers={[topoLayer, contoursLayer, hillshadingLayer]}
+        >
+          <ZoomController zoom={filters.zoom} />
+
+          {!loading &&
+            filtered.map((fire) => (
+              <Marker
+                key={fire.id}
+                position={[fire.latitude, fire.longitude]}
+                icon={fireIcon}
+              >
+                <Popup>
+                  <strong>Latitude: </strong> {fire.latitude} <br />
+                  <strong>Longitude: </strong> {fire.longitude} <br />
+                  <strong>Confidence:</strong> {fire.confidence} <br />
+                  <strong>Brightness:</strong> {fire.bright_ti4} <br />
+                  <strong>Date:</strong> {fire.acq_date} <br />
+                  <strong>Time: </strong> {fire.acq_time}
+                </Popup>
+              </Marker>
+            ))}
+        </MapContainer>
+      </div>
     </div>
   );
 }
