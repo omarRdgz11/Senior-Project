@@ -7,8 +7,9 @@ import {
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { fetchRawDetections, type RawDetection } from "../api/Map/Raw_Detections/rawDetections";
-import FilterSidebar from "../components/Sidebar/FilterSidebar";
+import { fetchRawDetections, type RawDetection } from "../../api/Map/Raw_Detections/rawDetections";
+import FilterSidebar from "../../components/Sidebar/FilterSidebar";
+import { styles } from "./WildfireMapPage.styles";
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
 
@@ -99,10 +100,13 @@ export default function WildfireMapPage() {
   }, [filters, detections]);
 
 return (
-  <div className="relative h-[calc(100vh-64px)] overflow-hidden">
+  <div 
+    className="h-[calc(100vh-64px)] overflow-hidden"
+    style={styles.container}
+  >
       {/* Sidebar */}
       {sidebarOpen && (
-        <div className="fixed top-[64px] right-0 w-72 h-[calc(100vh-64px)] bg-base-200 border-r border-base-300 z-40">
+        <div style={styles.sidebar}>
           <FilterSidebar filters={filters} setFilters={setFilters} />
         </div>
       )}
@@ -110,7 +114,8 @@ return (
       {/* Toggle Button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed bottom-3 right-3 z-[1000] bg-white border border-base-300 rounded-md px-2 py-1 text-sm shadow hover:bg-base-200 transition"
+        className="fixed bottom-3 right-3 z-[1000] border border-base-300 rounded-md px-2 py-1 text-sm shadow hover:bg-base-200"
+        style={styles.buttons}
       >
         {sidebarOpen ? "← Hide" : "☰ Filters"}
       </button>
