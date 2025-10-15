@@ -21,6 +21,8 @@ const fireIcon = L.icon({
   popupAnchor: [0, -28],
 });
 
+const bounds = new L.LatLngBounds([[25.80, -106.65], [36.50, -93.50]]);
+
 var topoLayer = L.tileLayer(
   `https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
   { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'}
@@ -125,30 +127,35 @@ return (
         className="fixed top-[64px] h-[calc(100vh-64px)] left-0 w-full transition-all duration-300 ease-in-out"
       >
         <MapContainer
-          center={[30.2672, -97.7431]} // Austin
+          center={[30.2672, -97.7431]} 
           zoom={filters.zoom}
           className="h-full w-full"
           layers={[topoLayer, contoursLayer, hillshadingLayer]}
+          maxBounds={bounds}
+          minZoom={6}
+          maxZoom={20}
         >
           <ZoomController zoom={filters.zoom} />
 
           {!loading &&
-            filtered.map((fire) => (
-              <Marker
-                key={fire.id}
-                position={[fire.latitude, fire.longitude]}
-                icon={fireIcon}
-              >
-                <Popup>
-                  <strong>Latitude: </strong> {fire.latitude} <br />
-                  <strong>Longitude: </strong> {fire.longitude} <br />
-                  <strong>Confidence:</strong> {fire.confidence} <br />
-                  <strong>Brightness:</strong> {fire.bright_ti4} <br />
-                  <strong>Date:</strong> {fire.acq_date} <br />
-                  <strong>Time: </strong> {fire.acq_time}
-                </Popup>
-              </Marker>
-            ))}
+            filtered
+              .filter((fire) => bounds.contains([fire.latitude, fire.longitude]))
+              .map((fire) => (
+                <Marker
+                  key={fire.id}
+                  position={[fire.latitude, fire.longitude]}
+                  icon={fireIcon}
+                >
+                  <Popup>
+                    <strong>Latitude: </strong> {fire.latitude} <br />
+                    <strong>Longitude: </strong> {fire.longitude} <br />
+                    <strong>Confidence:</strong> {fire.confidence} <br />
+                    <strong>Brightness:</strong> {fire.bright_ti4} <br />
+                    <strong>Date:</strong> {fire.acq_date} <br />
+                    <strong>Time: </strong> {fire.acq_time}
+                  </Popup>
+                </Marker>
+          ))}
         </MapContainer>
       </div>
     </div>

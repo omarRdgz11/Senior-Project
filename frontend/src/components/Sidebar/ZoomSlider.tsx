@@ -9,10 +9,10 @@ const ZoomSlider: React.FC<ZoomSliderProps> = ({ filters, setFilters }) => {
       <label className="block text-sm font-medium mb-1">Zoom</label>
       <input
         type="range"
-        min="0"
+        min="6"
         max="20"
         step="1"
-        value={filters.zoom || 7}
+        value={filters.zoom || 10}
         onChange={(e) => {
           setFilters(() => ({
             zoom: Number(e.target.value),
