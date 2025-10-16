@@ -6,4 +6,3 @@ def register_routes(app):
     app.register_blueprint(health_bp)
     app.register_blueprint(hello_bp)
     app.register_blueprint(raw_detections_bp)
-

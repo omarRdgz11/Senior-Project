@@ -4,8 +4,8 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from .extensions import db, migrate
 from .Routes import register_routes  # Capital R
-from .Models import RawDetection
-from .Models import Message
+# from .Models import RawDetection
+# from .Models import Message
 
 def create_app():
     load_dotenv()

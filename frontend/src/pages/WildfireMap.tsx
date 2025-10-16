@@ -98,6 +98,58 @@ export default function WildfireMapPage() {
     setFiltered(filteredData);
   }, [filters, detections]);
 
+  // 1) Key + URL diagnostics (runs once on mount)
+useEffect(() => {
+  const masked = (k?: string) =>
+    k ? `${k.slice(0, 4)}…${k.slice(-4)} (len=${k.length})` : "(undefined)";
+
+  console.groupCollapsed("[MapTiler] Key + URL diagnostics");
+  console.log("import.meta.env.VITE_MAPTILER_KEY:", masked(MAPTILER_KEY));
+  console.log("Vite mode:", import.meta.env.MODE, "DEV:", import.meta.env.DEV, "PROD:", import.meta.env.PROD);
+
+  if (!MAPTILER_KEY || MAPTILER_KEY === "YOUR_MAPTILER_KEY") {
+    console.error(
+      "[MapTiler] Missing/placeholder key. Ensure `.env` (or `.env.local`) contains `VITE_MAPTILER_KEY=...` at build time."
+    );
+  }
+
+  const samplePng = `https://api.maptiler.com/maps/topo-v2/1/1/1.png?key=${MAPTILER_KEY}`;
+  console.log("Sample PNG tile URL:", samplePng);
+
+  // Quick network probe: HEAD then GET (some CDNs don’t allow HEAD; we fallback to GET)
+  (async () => {
+    try {
+      let res = await fetch(samplePng, { method: "HEAD" });
+      if (!res.ok) {
+        console.warn("[MapTiler] HEAD status:", res.status, res.statusText);
+      } else {
+        console.log("[MapTiler] HEAD OK:", res.status);
+      }
+    } catch (e) {
+      console.warn("[MapTiler] HEAD request failed; trying GET:", e);
+      try {
+        const res2 = await fetch(samplePng, { method: "GET" });
+        console.log("[MapTiler] GET status:", res2.status, res2.statusText);
+        if (!res2.ok) {
+          // Some 4xx/5xx responses include JSON with an error message — try to read it:
+          const ct = res2.headers.get("content-type") || "";
+          if (ct.includes("application/json")) {
+            const j = await res2.json().catch(() => null);
+            console.warn("[MapTiler] Error body:", j);
+          } else {
+            const t = await res2.text().catch(() => "");
+            console.warn("[MapTiler] Error text:", t.slice(0, 200));
+          }
+        }
+      } catch (e2) {
+        console.error("[MapTiler] GET request failed:", e2);
+      }
+    }
+  })();
+
+  console.groupEnd();
+}, []);
+
 return (
   <div className="relative h-[calc(100vh-64px)] overflow-hidden">
       {/* Sidebar */}
