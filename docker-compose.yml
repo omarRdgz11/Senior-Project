@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgis/postgis:16-3.4
     container_name: fire-db
     restart: unless-stopped
     ports:
@@ -17,6 +17,7 @@ services:
       timeout: 5s
       retries: 10
 
+
   adminer:
     image: adminer:latest
     container_name: fire-adminer
@@ -29,6 +30,7 @@ services:
       # Adminer uses 8080 in its official image; we expose as-is.
       # Access via http://localhost:8080
       ADMINER_DEFAULT_SERVER: db
+
 
   backend:
     build:
@@ -48,6 +50,7 @@ services:
       db:
         condition: service_healthy
 
+
   frontend:
     image: node:20-alpine
     container_name: fire-frontend
@@ -61,6 +64,7 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+
 
 volumes:
   db_data:

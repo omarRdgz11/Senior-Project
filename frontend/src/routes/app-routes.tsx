@@ -8,7 +8,7 @@ import Omar from "../pages/About/People/Omar";
 import Linh from "../pages/About/People/Linh";
 import Analee from "../pages/About/People/Analee"
 import WildfireMapPage from "../pages/WildfireMap/WildfireMapPage";
-//import TestRawDetections from "../pages/TestRawDetections";
+import TestRawDetections from "../pages/TestRawDetections";
 // Add more imports as new teammates create files
 
 const NotFound = () => (
@@ -26,7 +26,7 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },            // "/"
       { path: "WildfireMap", element: <WildfireMapPage /> },         // /WildfireMap
       { path: "about", element: <AboutPage /> },         // "/about"
-      //{ path: "TestRawDetections", element: <TestRawDetections />},
+      { path: "TestRawDetections", element: <TestRawDetections />},
 
       // People profiles (one route per file under About/People)
       { path: "about/people/omar", element: <Omar /> },
