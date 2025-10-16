@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
 
 const people = [
-  { name: "Analee", role: "Developer", path: "/about/people/analee"},
-  { name: "Linh", role: "Developer", path: "/about/people/linh" },
   { name: "Omar", role: "Developer", path: "/about/people/omar" },
-  
+  { name: "Teammate", role: "Contributor", path: "/about/people/teammate" },
+  { name: "Linh", role: "Developer", path: "/about/people/linh" },
   // Add more { name, role, path } as new files are created
 ];
 
@@ -24,10 +23,10 @@ export default function AboutPage() {
             <a className="btn btn-primary btn-sm" href="http://localhost:5173" target="_blank" rel="noreferrer">
               Frontend
             </a>
-            <a className="btn btn-primary btn-sm" href="http://localhost:5005/api/ping" target="_blank" rel="noreferrer">
-              Backend (API: Ping)
+            <a className="btn btn-outline btn-sm" href="http://localhost:5005/api/ping" target="_blank" rel="noreferrer">
+              Backend /api/ping
             </a>
-            <a className="btn btn-primary btn-sm" href="http://localhost:8080" target="_blank" rel="noreferrer">
+            <a className="btn btn-ghost btn-sm" href="http://localhost:8080" target="_blank" rel="noreferrer">
               Adminer
             </a>
           </div>
@@ -51,7 +50,10 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
-          
+          <p className="text-xs text-base-content/60 mt-3">
+            Add new profiles by creating a file under <code>src/pages/About/People/</code> and
+            adding a route in <code>app-routes.tsx</code>.
+          </p>
         </div>
       </div>
     </div>
