@@ -1,0 +1,203 @@
+import { useEffect, useState } from "react";
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  useMap,
+} from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { fetchRawDetections, type RawDetection } from "../api/Map/Raw_Detections/rawDetections";
+import FilterSidebar from "../components/Sidebar/FilterSidebar";
+
+const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
+
+// --- Custom Fire Icon ---
+const fireIcon = L.icon({
+  iconUrl: "/images/fire-icon.webp", // from public/images
+  iconSize: [28, 28],
+  iconAnchor: [14, 28],
+  popupAnchor: [0, -28],
+});
+
+var topoLayer = L.tileLayer(
+  `https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`,
+  { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'}
+);
+
+var contoursLayer = L.tileLayer(
+  `https://api.maptiler.com/tiles/contours-v2/{z}/{x}/{y}.pbf?key=${MAPTILER_KEY}`,
+  { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>',
+    opacity: 1
+  }
+);
+
+var hillshadingLayer = L.tileLayer(
+  `https://api.maptiler.com/tiles/hillshade/{z}/{x}/{y}.webp?key=${MAPTILER_KEY}`,
+  { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a>'}
+);
+
+// --- Zoom Controller Hook ---
+function ZoomController({ zoom }: { zoom: number }) {
+  const map = useMap();
+  useEffect(() => {
+    map.setZoom(zoom);
+  }, [zoom, map]);
+  return null;
+}
+
+export default function WildfireMapPage() {
+  const [detections, setDetections] = useState<RawDetection[]>([]);
+  const [filtered, setFiltered] = useState<RawDetection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Filters
+  const [filters, setFilters] = useState({
+    dateRange: { start: "", end: "" },
+    confidence: "",
+    zoom: 10,
+  });
+
+  useEffect(() => {
+    async function loadDetections() {
+      const data = await fetchRawDetections();
+      setDetections(data);
+      setFiltered(data);
+      setLoading(false);
+    }
+    loadDetections();
+  }, []);
+
+  // Apply filters when user changes them
+  useEffect(() => {
+    if (!detections.length) return;
+
+    let filteredData = [...detections];
+
+    if (filters.confidence) {
+      filteredData = filteredData.filter(
+        (d) => d.confidence?.toLowerCase() === filters.confidence.toLowerCase()
+      );
+    }
+
+    if (
+      filters.dateRange &&
+      filters.dateRange.start &&
+      filters.dateRange.end
+    ) {
+      filteredData = filteredData.filter((d) => {
+        const date = new Date(d.acq_date);
+        return (
+          date >= new Date(filters.dateRange.start) &&
+          date <= new Date(filters.dateRange.end)
+        );
+      });
+    }
+
+    setFiltered(filteredData);
+  }, [filters, detections]);
+
+  // 1) Key + URL diagnostics (runs once on mount)
+useEffect(() => {
+  const masked = (k?: string) =>
+    k ? `${k.slice(0, 4)}…${k.slice(-4)} (len=${k.length})` : "(undefined)";
+
+  console.groupCollapsed("[MapTiler] Key + URL diagnostics");
+  console.log("import.meta.env.VITE_MAPTILER_KEY:", masked(MAPTILER_KEY));
+  console.log("Vite mode:", import.meta.env.MODE, "DEV:", import.meta.env.DEV, "PROD:", import.meta.env.PROD);
+
+  if (!MAPTILER_KEY || MAPTILER_KEY === "YOUR_MAPTILER_KEY") {
+    console.error(
+      "[MapTiler] Missing/placeholder key. Ensure `.env` (or `.env.local`) contains `VITE_MAPTILER_KEY=...` at build time."
+    );
+  }
+
+  const samplePng = `https://api.maptiler.com/maps/topo-v2/1/1/1.png?key=${MAPTILER_KEY}`;
+  console.log("Sample PNG tile URL:", samplePng);
+
+  // Quick network probe: HEAD then GET (some CDNs don’t allow HEAD; we fallback to GET)
+  (async () => {
+    try {
+      let res = await fetch(samplePng, { method: "HEAD" });
+      if (!res.ok) {
+        console.warn("[MapTiler] HEAD status:", res.status, res.statusText);
+      } else {
+        console.log("[MapTiler] HEAD OK:", res.status);
+      }
+    } catch (e) {
+      console.warn("[MapTiler] HEAD request failed; trying GET:", e);
+      try {
+        const res2 = await fetch(samplePng, { method: "GET" });
+        console.log("[MapTiler] GET status:", res2.status, res2.statusText);
+        if (!res2.ok) {
+          // Some 4xx/5xx responses include JSON with an error message — try to read it:
+          const ct = res2.headers.get("content-type") || "";
+          if (ct.includes("application/json")) {
+            const j = await res2.json().catch(() => null);
+            console.warn("[MapTiler] Error body:", j);
+          } else {
+            const t = await res2.text().catch(() => "");
+            console.warn("[MapTiler] Error text:", t.slice(0, 200));
+          }
+        }
+      } catch (e2) {
+        console.error("[MapTiler] GET request failed:", e2);
+      }
+    }
+  })();
+
+  console.groupEnd();
+}, []);
+
+return (
+  <div className="relative h-[calc(100vh-64px)] overflow-hidden">
+      {/* Sidebar */}
+      {sidebarOpen && (
+        <div className="fixed top-[64px] right-0 w-72 h-[calc(100vh-64px)] bg-base-200 border-r border-base-300 z-40">
+          <FilterSidebar filters={filters} setFilters={setFilters} />
+        </div>
+      )}
+
+      {/* Toggle Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed bottom-3 right-3 z-[1000] bg-white border border-base-300 rounded-md px-2 py-1 text-sm shadow hover:bg-base-200 transition"
+      >
+        {sidebarOpen ? "← Hide" : "☰ Filters"}
+      </button>
+
+      {/* Map Section */}
+      <div
+        className="fixed top-[64px] h-[calc(100vh-64px)] left-0 w-full transition-all duration-300 ease-in-out"
+      >
+        <MapContainer
+          center={[30.2672, -97.7431]} // Austin
+          zoom={filters.zoom}
+          className="h-full w-full"
+          layers={[topoLayer, contoursLayer, hillshadingLayer]}
+        >
+          <ZoomController zoom={filters.zoom} />
+
+          {!loading &&
+            filtered.map((fire) => (
+              <Marker
+                key={fire.id}
+                position={[fire.latitude, fire.longitude]}
+                icon={fireIcon}
+              >
+                <Popup>
+                  <strong>Latitude: </strong> {fire.latitude} <br />
+                  <strong>Longitude: </strong> {fire.longitude} <br />
+                  <strong>Confidence:</strong> {fire.confidence} <br />
+                  <strong>Brightness:</strong> {fire.bright_ti4} <br />
+                  <strong>Date:</strong> {fire.acq_date} <br />
+                  <strong>Time: </strong> {fire.acq_time}
+                </Popup>
+              </Marker>
+            ))}
+        </MapContainer>
+      </div>
+    </div>
+  );
+}

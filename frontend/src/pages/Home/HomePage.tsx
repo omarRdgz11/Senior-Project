@@ -10,7 +10,8 @@ export default function HomePage() {
         <div className="flex flex-wrap gap-2">
           <Link to="/about" className="btn btn-primary">About</Link>
           {/* sample personal page route */}
-          <Link to="/about/me/your-name" className="btn btn-outline">About Me</Link>
+          <Link to="/wildfiremap" className="btn btn-primary">Map</Link>
+          <Link to="/testrawdetections" className="btn btn-primary">Raw Detections — API Test</Link>
         </div>
       </div>
     </div>

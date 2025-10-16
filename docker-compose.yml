@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16
+    image: postgis/postgis:16-3.4
     container_name: fire-db
     restart: unless-stopped
     ports:
@@ -30,6 +30,7 @@ services:
       # Access via http://localhost:8080
       ADMINER_DEFAULT_SERVER: db
 
+
   backend:
     build:
       context: ./backend
@@ -48,6 +49,7 @@ services:
       db:
         condition: service_healthy
 
+
   frontend:
     image: node:20-alpine
     container_name: fire-frontend
@@ -61,6 +63,45 @@ services:
       - "5173:5173"
     depends_on:
       - backend
+
+  redis:
+    image: redis:7-alpine
+    container_name: fire-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fire-celery-worker
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - redis
+    env_file: .env
+    environment:
+      DOCKER: "1"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    command: sh -c "celery -A app.tasks.celery_app.celery worker --loglevel=INFO"
+
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fire-celery-beat
+    restart: unless-stopped
+    depends_on:
+      - backend
+      - redis
+    env_file: .env
+    environment:
+      DOCKER: "1"
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/1
+    command: sh -c "celery -A app.tasks.celery_app.celery beat --loglevel=INFO"
 
 volumes:
   db_data:
