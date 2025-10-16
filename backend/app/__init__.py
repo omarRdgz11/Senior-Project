@@ -4,8 +4,6 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from .extensions import db, migrate
 from .Routes import register_routes  # Capital R
-from .Models import RawDetection
-from .Models import Message
 
 def create_app():
     load_dotenv()
@@ -24,6 +22,8 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    # Import models so SQLAlchemy sees them
+    from .Models import Message  # noqa: F401
 
     # >>> AUTO-CREATE TABLES (no migrations) <<<
     with app.app_context():

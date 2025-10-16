@@ -28,7 +28,7 @@ export default function Omar() {
               Hi, I’m Omar Alexander Carmona Rodriguez. For this project I am the Systems Architect in charge of ensuring
               that our systems on the frontend and backend are working as intended and needed. 
               As well as a full stack developer for the website and in charge of version control
-              on our Github Repository. 
+              on our Github. 
             </p>
           </section>
 

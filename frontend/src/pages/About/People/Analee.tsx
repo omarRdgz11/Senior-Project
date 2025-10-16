@@ -98,7 +98,7 @@ export default function Analee() {
           </section>
         </div>
       </article>
-    </div>
-  );
-}
+      </div>
+    );
+  }
   

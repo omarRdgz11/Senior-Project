@@ -62,7 +62,10 @@ export default function AboutPage() {
               </div>
             ))}
           </div>
-          
+          <p className="text-xs text-base-content/60 mt-3">
+            Add new profiles by creating a file under <code>src/pages/About/People/</code> and
+            adding a route in <code>app-routes.tsx</code>.
+          </p>
         </div>
       </div>
     </div>
