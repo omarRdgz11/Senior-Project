@@ -9,6 +9,7 @@ import Linh from "../pages/About/People/Linh";
 import Analee from "../pages/About/People/Analee"
 import WildfireMapPage from "../pages/WildfireMap/WildfireMapPage";
 import TestRawDetections from "../pages/TestRawDetections";
+import ModelTest from "../pages/ModelTest";
 // Add more imports as new teammates create files
 
 const NotFound = () => (
@@ -32,7 +33,7 @@ export const router = createBrowserRouter([
       { path: "about/people/omar", element: <Omar /> },
       { path: "about/people/linh", element: <Linh /> },
       { path: "about/people/Analee", element: <Analee />},
-
+      { path: "ModelTest", element: <ModelTest />},
 
       { path: "*", element: <NotFound /> },
     ],
