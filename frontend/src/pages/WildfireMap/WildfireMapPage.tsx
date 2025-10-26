@@ -10,6 +10,7 @@ import "leaflet/dist/leaflet.css";
 import { fetchRawDetections, type RawDetection } from "../../api/Map/Raw_Detections/rawDetections";
 import FilterSidebar from "../../components/Sidebar/FilterSidebar";
 import { styles } from "./WildfireMapPage.styles";
+import { postPredict, type PredictResponse } from "../../api/predict";
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
 
@@ -51,9 +52,12 @@ function ZoomController({ zoom }: { zoom: number }) {
 
 export default function WildfireMapPage() {
   const [detections, setDetections] = useState<RawDetection[]>([]);
+  const [payload, setPayload] = useState<any[]>([]);
+  const [predictions, setPredictions] = useState<PredictResponse | null>(null);
   const [filtered, setFiltered] = useState<RawDetection[]>([]);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Filters
   const [filters, setFilters] = useState({
@@ -101,6 +105,46 @@ export default function WildfireMapPage() {
     setFiltered(filteredData);
   }, [filters, detections]);
 
+  // --- Step 1: Load payload data (fake sample points from Texas) ---
+  useEffect(() => {
+    async function loadPayload() {
+      try {
+        const res = await fetch("/payload_means.json");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        // if payload_means.json only has 1 record, duplicate across TX for demo
+        const base = data.rows[0];
+        const fakeRows = [
+          { ...base, latitude: 30.2672, longitude: -97.7431 }, // Austin
+        ];
+        setPayload(fakeRows);
+      } catch (err: any) {
+        setError(`Failed to load payload: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadPayload();
+  }, []);
+
+  // --- Step 2: Call the prediction model once payload is ready ---
+  useEffect(() => {
+    async function predict() {
+      if (!payload.length) return;
+      try {
+        const res = await postPredict(payload, 0.25);
+        setPredictions(res);
+      } catch (err: any) {
+        setError(err.message ?? String(err));
+      }
+    }
+    predict();
+  }, [payload]);
+
+  // --- Loading & Error States ---
+  if (loading) return <p className="p-6 text-sm opacity-70">Loading model data…</p>;
+  if (error) return <p className="p-6 text-red-600">{error}</p>;
+
 return (
   <div 
     className="h-[calc(100vh-64px)] overflow-hidden"
@@ -137,7 +181,7 @@ return (
         >
           <ZoomController zoom={filters.zoom} />
 
-          {!loading &&
+          {/* {!loading &&
             filtered
               .filter((fire) => bounds.contains([fire.latitude, fire.longitude]))
               .map((fire) => (
@@ -155,7 +199,27 @@ return (
                     <strong>Time: </strong> {fire.acq_time}
                   </Popup>
                 </Marker>
-          ))}
+          ))} */}
+
+          {predictions?.results.map((pred, i) => {
+            const p = payload[i];
+            if (!bounds.contains([p.latitude, p.longitude])) return null;
+
+            const isHighRisk = pred.fire_risk || pred.probability >= 0.5;
+            const icon = fireIcon;
+
+            return (
+              <Marker key={i} position={[p.latitude, p.longitude]} icon={icon}>
+                <Popup>
+                  <strong>Latitude:</strong> {p.latitude.toFixed(4)} <br />
+                  <strong>Longitude:</strong> {p.longitude.toFixed(4)} <br />
+                  <strong>Probability:</strong> {pred.probability.toFixed(3)} <br />
+                  <strong>Fire Risk:</strong> {isHighRisk ? "🔥 High" : "🌿 Low"} <br />
+                  <strong>Threshold:</strong> 0.25
+                </Popup>
+              </Marker>
+            );
+          })}
         </MapContainer>
       </div>
     </div>
