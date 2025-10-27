@@ -58,3 +58,4 @@ export async function postPredict(
     throw new Error(`Unexpected response: ${text.slice(0, 400)}`);
   }
 }
+
