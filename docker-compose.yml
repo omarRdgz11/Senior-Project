@@ -1,22 +1,34 @@
+# docker-compose.yml
+# Production-leaning setup for a single droplet WITHOUT a domain (yet).
+# - DB is NOT exposed publicly (safer).
+# - Backend (5005), Frontend (5173), Adminer (8080) are reachable via droplet IP and those ports.
+# - When you later add a reverse proxy (Caddy/Nginx) + domain/HTTPS:
+#   * Bind app ports to 127.0.0.1 and let the proxy serve 80/443
+#   * Or remove public port mappings entirely and keep everything internal.
+
 services:
   db:
     image: postgis/postgis:16-3.4
     container_name: fire-db
     restart: unless-stopped
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # IMPORTANT: Do NOT publish DB port publicly in production.
+    # Remove or comment out the next lines if present:
+    # ports:
+    #   - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-app}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
       POSTGRES_DB: ${POSTGRES_DB:-appdb}
+    # Persist the database on the HOST so it survives container rebuilds.
+    # Adjust the host path if your project lives elsewhere on the droplet.
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - /opt/senior-project/data/db:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-appdb}"]
       interval: 5s
       timeout: 5s
       retries: 10
-
+    networks: [fire-net]
 
   adminer:
     image: adminer:latest
@@ -24,13 +36,20 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+    # While you have no domain, you can temporarily expose Adminer publicly.
+    # Visit: http://<YOUR_DROPLET_IP>:8080
     ports:
       - "8080:8080"
+    
     environment:
-      # Adminer uses 8080 in its official image; we expose as-is.
-      # Access via http://localhost:8080
-      ADMINER_DEFAULT_SERVER: db
 
+      ADMINER_DEFAULT_SERVER: db
+    networks: [fire-net]
+    # SECURITY TIP (optional): Instead of exposing 8080 publicly, you can bind to localhost
+    # and reach it over an SSH tunnel:
+    # ports:
+    #   - "127.0.0.1:8080:8080"
+    # Then from your laptop: ssh -L 8080:localhost:8080 deploy@<YOUR_DROPLET_IP>
 
   backend:
     build:
@@ -40,31 +59,50 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      # ensure Flask sees DATABASE_URL etc.
+      # Let the app know it's running inside Docker
       DOCKER: "1"
-    volumes:
-      - ./backend:/app
+      # Make sure your .env sets: FLASK_ENV=production, DATABASE_URL, CORS_ORIGINS, etc.
+    # In production, it's cleaner NOT to bind-mount the source code.
+    # Comment the next line to make images self-contained (recommended once stable):
+    # volumes:
+    #   - ./backend:/app
     ports:
+      # Expose backend so the frontend (and your browser) can reach it via droplet IP
       - "5005:5005"
     depends_on:
       db:
         condition: service_healthy
-
+    networks: [fire-net]
 
   frontend:
+    # Quick/simple approach using the Vite dev/preview server.
+    # For a real prod build, you'd normally build static files and serve via Caddy/Nginx.
     image: node:20-alpine
     container_name: fire-frontend
     working_dir: /usr/src/app
     environment:
       DOCKER: "1"
+      # IMPORTANT: In your .env, set VITE_API_BASE to:
+      #   http://<YOUR_DROPLET_IP>:5005
+      # or (if your backend routes are under /api) something like:
+      #   http://<YOUR_DROPLET_IP>:5005
+      #
+      # Later, when you get a domain + HTTPS, switch to:
+      #   https://your-domain.com
     volumes:
       - ./frontend:/usr/src/app
-    command: sh -c "npm install && npm run dev -- --host"
+    # "dev" is fine for now; "preview" also works if you build first.
+    # If you switch to preview:
+    #   command: sh -c "npm ci && npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
+    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
     ports:
       - "5173:5173"
     depends_on:
       - backend
+    networks: [fire-net]
+
+networks:
+  fire-net:
+    driver: bridge
 
 
-volumes:
-  db_data:
