@@ -32,23 +32,24 @@ services:
       ADMINER_DEFAULT_SERVER: db
 
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: fire-backend
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      # ensure Flask sees DATABASE_URL etc.
-      DOCKER: "1"
-    volumes:
-      - ./backend:/app
-    ports:
-      - "5005:5005"
-    depends_on:
-      db:
-        condition: service_healthy
+backend:
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  container_name: fire-backend
+  restart: unless-stopped
+  env_file: .env
+  environment:
+    DOCKER: "1"
+  # Mount ONLY the data folder into the exact path the app reads
+  volumes:
+    - ./backend/data:/app/backend/data:ro
+  ports:
+    - "5005:5005"
+  depends_on:
+    db:
+      condition: service_healthy
+
 
 
   frontend:
