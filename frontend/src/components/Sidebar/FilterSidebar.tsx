@@ -1,7 +1,8 @@
 import DateRangeFilter from "./DateRangeFilter";
-import ConfidenceFilter from "./ConfidenceFilter";
-import ZoomSlider from "./ZoomSlider";
-import { styles } from "../Sidebar/Sidebar.styles"
+import CoordinateFilter from "./CoordinateFilter";
+import ThresholdFilter from "./ThresholdFiler";
+// import RadiusFilter from "./RadiusFilter";
+import { styles } from "../Sidebar/Sidebar.styles";
 
 interface FilterSidebarProps {
   filters: any;
@@ -19,11 +20,17 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filters, setFilters }) =>
         {/* Date Range Filter */}
         <DateRangeFilter filters={filters} setFilters={setFilters} />
 
-        {/* Confidence Filter */}
-        <ConfidenceFilter filters={filters} setFilters={setFilters} />
+        {/* Coordinate Filter */}
+        <CoordinateFilter filters={filters} setFilters={setFilters} />
+
+        {/* Threshold Filter */}
+        <ThresholdFilter filters={filters} setFilters={setFilters} />
+
+        {/* Radius Filter */}
+        {/* <RadiusFilter filters={filters} setFilters={setFilters} /> */}
 
         {/* Zoom Slider */}
-        <ZoomSlider filters={filters} setFilters={setFilters} />
+        {/* <ZoomSlider filters={filters} setFilters={setFilters} /> */}
       </div>
     </aside>
   );
