@@ -51,28 +51,25 @@ services:
     #   - "127.0.0.1:8080:8080"
     # Then from your laptop: ssh -L 8080:localhost:8080 deploy@<YOUR_DROPLET_IP>
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: fire-backend
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      # Let the app know it's running inside Docker
-      DOCKER: "1"
-      # Make sure your .env sets: FLASK_ENV=production, DATABASE_URL, CORS_ORIGINS, etc.
-    # In production, it's cleaner NOT to bind-mount the source code.
-    # Comment the next line to make images self-contained (recommended once stable):
-    # volumes:
-    #   - ./backend:/app
-    ports:
-      # Expose backend so the frontend (and your browser) can reach it via droplet IP
-      - "5005:5005"
-    depends_on:
-      db:
-        condition: service_healthy
-    networks: [fire-net]
+backend:
+  build:
+    context: ./backend
+    dockerfile: Dockerfile
+  container_name: fire-backend
+  restart: unless-stopped
+  env_file: .env
+  environment:
+    DOCKER: "1"
+  # Mount ONLY the data folder into the exact path the app reads
+  volumes:
+    - ./backend/data:/app/backend/data:ro
+  ports:
+    - "5005:5005"
+  depends_on:
+    db:
+      condition: service_healthy
+
+
 
   frontend:
     # Quick/simple approach using the Vite dev/preview server.
