@@ -51,23 +51,23 @@ services:
     #   - "127.0.0.1:8080:8080"
     # Then from your laptop: ssh -L 8080:localhost:8080 deploy@<YOUR_DROPLET_IP>
 
-backend:
-  build:
-    context: ./backend
-    dockerfile: Dockerfile
-  container_name: fire-backend
-  restart: unless-stopped
-  env_file: .env
-  environment:
-    DOCKER: "1"
-  # Mount ONLY the data folder into the exact path the app reads
-  volumes:
-    - ./backend/data:/app/backend/data:ro
-  ports:
-    - "5005:5005"
-  depends_on:
-    db:
-      condition: service_healthy
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fire-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DOCKER: "1"
+    # Mount ONLY the data folder into the exact path the app reads
+    volumes:
+      - ./backend/data:/app/backend/data:ro
+    ports:
+      - "5005:5005"
+    depends_on:
+      db:
+        condition: service_healthy
 
 
 
