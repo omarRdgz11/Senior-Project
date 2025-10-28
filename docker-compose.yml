@@ -36,20 +36,16 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-    # While you have no domain, you can temporarily expose Adminer publicly.
-    # Visit: http://<YOUR_DROPLET_IP>:8080
     ports:
       - "8080:8080"
-    
     environment:
-
       ADMINER_DEFAULT_SERVER: db
     networks: [fire-net]
     # SECURITY TIP (optional): Instead of exposing 8080 publicly, you can bind to localhost
     # and reach it over an SSH tunnel:
     # ports:
     #   - "127.0.0.1:8080:8080"
-    # Then from your laptop: ssh -L 8080:localhost:8080 deploy@<YOUR_DROPLET_IP>
+    # From your laptop (example): ssh -L 8080:localhost:8080 deploy@<YOUR_DROPLET_IP>
 
   backend:
     build:
@@ -60,14 +56,25 @@ services:
     env_file: .env
     environment:
       DOCKER: "1"
-    # Mount ONLY the data folder into the exact path the app reads
+      FLASK_ENV: production
+      # If your app uses a factory in backend/app/__init__.py, this usually works:
+      FLASK_APP: app
+      PYTHONUNBUFFERED: "1"
+    # Mount ONLY the data folder so ingesters can see CSVs
     volumes:
       - ./backend/data:/app/backend/data:ro
+    # Ensure this matches your Dockerfile layout:
+    # If your Dockerfile uses WORKDIR /app, keep /app here.
+    working_dir: /app
+    # Use a non-debug command to avoid restart loops:
+    command: flask run --host=0.0.0.0 --port=5005
     ports:
       - "5005:5005"
     depends_on:
       db:
         condition: service_healthy
+    networks: [fire-net]
+
 
 
 
