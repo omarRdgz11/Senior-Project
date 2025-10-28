@@ -62,7 +62,7 @@ services:
       PYTHONUNBUFFERED: "1"
     # Mount ONLY the data folder so ingesters can see CSVs
     volumes:
-      - ./backend/data:/app/backend/data:ro
+      - ./backend/data:/app/data:ro
     # Ensure this matches your Dockerfile layout:
     # If your Dockerfile uses WORKDIR /app, keep /app here.
     working_dir: /app
