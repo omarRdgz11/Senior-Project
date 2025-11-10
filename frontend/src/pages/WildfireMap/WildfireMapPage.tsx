@@ -90,11 +90,12 @@ export default function WildfireMapPage() {
           .toISOString()
           .slice(0, 10);
       const end = filters.dateRange.end || new Date().toISOString().slice(0, 10);
+      
       const centerLat =
         (filters.coordinates.minLat + filters.coordinates.maxLat) / 2;
       const centerLon =
         (filters.coordinates.minLon + filters.coordinates.maxLon) / 2;
-
+      
       // --- Fetch FIRMS and Prediction in parallel ---
       const [firmsData, predictData] = await Promise.all([
         fetchFirms({
@@ -154,7 +155,20 @@ export default function WildfireMapPage() {
             ? (fire.confidence ?? fire.probability ?? 0) >= filters.threshold
             : true;
 
-        return inBounds && inDateRange && meetsThreshold;
+        const now = new Date().toISOString().slice(0, 10);
+
+        const isFuture = date >= now;
+        const isPast = date <= now;
+
+        if (!inBounds || !inDateRange || !meetsThreshold) return false;
+
+        // Only allow:
+        // - FIRMS fires for past dates
+        // - Predictions for future dates
+        if (isPast && fire.type === "firms") return true;
+        if (isFuture && fire.type === "prediction") return true;
+
+        return false;
       });
 
       setFiltered(filteredData);
