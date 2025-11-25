@@ -4,7 +4,7 @@ import numpy as np
 from typing import Union, Iterable
 from sqlalchemy import text
 from app.extensions import db
-from app.Models.weather_daily import WeatherDaily
+from app.Models.Weather.weather_daily import WeatherDaily
 from app.model.bundle import load_bundle  # {model, complete_features, feature_means, threshold}
 
 EARTH_R_KM = 6371.0088
