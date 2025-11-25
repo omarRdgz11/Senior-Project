@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from sqlalchemy import desc
-from ..extensions import db
-from ..Models import Message
+from ...extensions import db
+from ...Models import Message
 
 bp = Blueprint("hello", __name__, url_prefix="/api/hello")
 
