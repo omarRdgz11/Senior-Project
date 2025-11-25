@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { listRawDetections, type RawDetection } from "../api/Map/Raw_Detections/rawDetections";
+import { listRawDetections, type RawDetection } from "../../api/Map/Raw_Detections/rawDetections";
 
 type SortKey = "acq_datetime_desc" | "acq_datetime_asc" | "frp_desc" | "frp_asc";
 

@@ -6,7 +6,7 @@ import {
   predictPointGET,
   type FirmsResponse,
   type GridPredictResponse,
-} from "../api/predict";
+} from "../../api/predict";
 
 type Tab = "firms" | "point" | "grid";
 

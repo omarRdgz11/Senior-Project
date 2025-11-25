@@ -40,15 +40,16 @@ services:
     restart: unless-stopped
     env_file: .env
     environment:
-      # ensure Flask sees DATABASE_URL etc.
       DOCKER: "1"
+    # Mount ONLY the data folder into the exact path the app reads
     volumes:
-      - ./backend:/app
+      - ./backend/data:/app/backend/data:ro
     ports:
       - "5005:5005"
     depends_on:
       db:
         condition: service_healthy
+
 
 
   frontend:
