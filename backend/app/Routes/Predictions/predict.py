@@ -3,9 +3,9 @@ from datetime import date
 from flask import Blueprint, request, jsonify
 import pandas as pd
 
-from ..model.service import predict_proba, score_to_label, get_feature_columns
-from ..model.bundle import load_bundle                    # {model, complete_features, feature_means, threshold}
-from ..services.features import derive_features_level2    # returns (feats_dict, ordered_values)
+from ...model.service import predict_proba, score_to_label, get_feature_columns
+from ...model.bundle import load_bundle                    # {model, complete_features, feature_means, threshold}
+from ...services.features import derive_features_level2    # returns (feats_dict, ordered_values)
 
 bp_predict = Blueprint("predict", __name__, url_prefix="/api/predict")
 

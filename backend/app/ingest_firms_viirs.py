@@ -2,7 +2,7 @@
 import csv, datetime, re
 from app.extensions import db
 from app import app
-from app.Models.firms_viirs import FirmsVIIRS
+from backend.app.Models.Fire.firms_viirs import FirmsVIIRS
 
 CSV_PATH = "/app/data/viirs-snpp_2024_United_States.csv"
 

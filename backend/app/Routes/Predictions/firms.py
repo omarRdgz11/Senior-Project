@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from datetime import date
 from sqlalchemy import and_
 from app.extensions import db
-from app.Models.firms_viirs import FirmsVIIRS  # adjust import path if needed
+from app.Models.Fire.firms_viirs import FirmsVIIRS  # adjust import path if needed
 import math
 
 firms_bp = Blueprint("firms", __name__, url_prefix="/api/firms")
