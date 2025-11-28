@@ -8,9 +8,9 @@ import Omar from "../pages/About/People/Omar";
 import Linh from "../pages/About/People/Linh";
 import Analee from "../pages/About/People/Analee"
 import WildfireMapPage from "../pages/WildfireMap/WildfireMapPage";
-import TestRawDetections from "../pages/TestRawDetections";
-import ModelTest from "../pages/ModelTest";
-import DashboardTest from "../pages/DashboardTest";
+import TestRawDetections from "../pages/TestPages/TestRawDetections";
+import ModelTest from "../pages/TestPages/ModelTest";
+import DashboardTest from "../pages/TestPages/DashboardTest";
 // Add more imports as new teammates create files
 
 const NotFound = () => (
@@ -35,7 +35,7 @@ export const router = createBrowserRouter([
       { path: "about/people/linh", element: <Linh /> },
       { path: "about/people/Analee", element: <Analee />},
       { path: "ModelTest", element: <ModelTest />},
-      { path: "DashboardTest", element: <DashboardTest />},
+      { path: "dashboardtest", element: <DashboardTest /> },
 
       { path: "*", element: <NotFound /> },
     ],
