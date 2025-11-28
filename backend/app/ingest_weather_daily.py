@@ -3,7 +3,7 @@ import csv, datetime, os, re
 from typing import Optional, Dict
 from app.extensions import db
 from app import app
-from backend.app.Models.Weather.weather_daily import WeatherDaily
+from app.Models.Weather.weather_daily import WeatherDaily
 
 CSV_PATH = "/app/data/30.30,-97.75 2023-01-01 to 2023-12-31.csv"
 
