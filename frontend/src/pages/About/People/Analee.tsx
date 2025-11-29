@@ -22,9 +22,10 @@ export default function Analee() {
 
           {/* Summary */}
           <section aria-labelledby="about-summary" className="space-y-2">
-            <h2 id="about-summary" className="text-xl font-semibold" style={styles.subtitle}>Summary</h2>
-            <p className="text-base-content/80" style={styles.text}>
-              Hi! I’m Analee
+            <h2 id="about-summary" className="text-xl font-semibold">Summary</h2>
+            <p className="text-base-content/80">
+              Hi! I’m Analee. I am the Backend and AI Developer for this project. I am respinsible for edsigning, training and 
+              testing our models as well as creating our initial migrations and tables for our database.
             </p>
           </section>
 
@@ -65,7 +66,7 @@ export default function Analee() {
           <section aria-labelledby="about-hobbies" className="space-y-2">
             <h2 id="about-hobbies" className="text-xl font-semibold">Hobbies</h2>
             <p className="text-base-content/80">
-              Sample Text
+              Swimming, Running, Traveling, Reading
             </p>
           </section>
 
@@ -75,7 +76,7 @@ export default function Analee() {
             <div className="flex flex-wrap gap-2">
               <a
                 className="btn btn-outline btn-sm"
-                href="https://github.com/your-handle"
+                href="https://github.com/analees"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="GitHub profile"
@@ -84,7 +85,7 @@ export default function Analee() {
               </a>
               <a
                 className="btn btn-ghost btn-sm"
-                href="https://linkedin.com/in/your-handle"
+                href="https://linkedin.com/in/analee-maharaj-cs/"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="LinkedIn profile"
