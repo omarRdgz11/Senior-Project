@@ -4,10 +4,12 @@ import {
   fetchWeatherDaily, type WeatherDailyResponse,
   fetchWeatherSummary, type WeatherSummaryResponse,
   fetchFiresDaily, type FiresDailyResponse,
-  fetchFiresSummary, type FiresSummaryResponse
-} from "../api/dashboard";
+  fetchFiresSummary, type FiresSummaryResponse,
+  fetchWatchlist, type WatchlistResponse,
+  fetchInsights, type InsightsResponse
+} from "../../api/dashboard";
 
-const DashboardTest: React.FC = () => {
+const DashboardRouteTest: React.FC = () => {
   // --- Overview API state ---
   const [overviewDate, setOverviewDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [overview, setOverview] = useState<DashboardOverview | null>(null);
@@ -29,6 +31,19 @@ const DashboardTest: React.FC = () => {
   const [fireSummary, setFireSummary] = useState<FiresSummaryResponse | null>(null);
   const [fireLoading, setFireLoading] = useState(false);
   const [fireError, setFireError] = useState<string | null>(null);
+
+  // --- Watchlist API state ---
+  const [watchlistDate, setWatchlistDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [watchlistData, setWatchlistData] = useState<WatchlistResponse | null>(null);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
+  const [watchlistError, setWatchlistError] = useState<string | null>(null);
+
+  // --- Insights API state ---
+  const [startDateInsights, setStartDateInsights] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [endDateInsights, setEndDateInsights] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [insightsData, setInsightsData] = useState<InsightsResponse | null>(null);
+  const [insightsLoading, setLoading] = useState(false);
+  const [insightsError, setError] = useState<string | null>(null);
 
   // --- Functions ---
   const loadOverview = async (date: string) => {
@@ -74,6 +89,34 @@ const DashboardTest: React.FC = () => {
       setFireData(null);
     } finally {
       setFireLoading(false);
+    }
+  };
+
+  const loadWatchlist = async (date: string) => {
+    setWatchlistLoading(true);
+    setWatchlistError(null);
+    try {
+      const data = await fetchWatchlist(date);
+      setWatchlistData(data);
+    } catch (err: any) {
+      setWatchlistError(err.message);
+      setWatchlistData(null);
+    } finally {
+      setWatchlistLoading(false);
+    }
+  };
+
+  const loadInsights = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchInsights(startDateInsights, endDateInsights);
+      setInsightsData(data);
+    } catch (err: any) {
+      setError(err.message);
+      setInsightsData(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -234,8 +277,89 @@ const DashboardTest: React.FC = () => {
           </div>
         )}
       </section>
+
+      {/* --- Watchlist API section --- */}
+      <section style={{ marginTop: "2rem" }}>
+        <h2>Watchlist API</h2>
+        <label>Select Date: </label>
+        <input
+          type="date"
+          value={watchlistDate}
+          onChange={(e) => setWatchlistDate(e.target.value)}
+        />
+        <button style={{ marginLeft: "0.5rem" }} onClick={() => loadWatchlist(watchlistDate)}>
+          Fetch Watchlist
+        </button>
+
+        {watchlistLoading && <p>Loading overview...</p>}
+        {watchlistError && <p style={{ color: "red" }}>Error: {watchlistError}</p>}
+        {!watchlistLoading && !watchlistError && watchlistData && (
+          <div>
+            <p>Date: {watchlistData.date}</p>
+            <table style={{ borderCollapse: "collapse", width: "100%", marginTop: "1rem" }}>
+              <thead>
+                <tr>
+                  <th style={{ border: "1px solid #ccc", padding: "0.5rem" }}>Name</th>
+                  <th style={{ border: "1px solid #ccc", padding: "0.5rem" }}>Risk</th>
+                  <th style={{ border: "1px solid #ccc", padding: "0.5rem" }}>Hotspots (24h)</th>
+                  <th style={{ border: "1px solid #ccc", padding: "0.5rem" }}>Windspeed</th>
+                  <th style={{ border: "1px solid #ccc", padding: "0.5rem" }}>Humidity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {watchlistData.items.map((row, i) => (
+                  <tr key={i}>
+                    <td style={{ border: "1px solid #ccc", padding: "0.5rem" }}>{row.name}</td>
+                    <td style={{ border: "1px solid #ccc", padding: "0.5rem" }}>{row.risk}</td>
+                    <td style={{ border: "1px solid #ccc", padding: "0.5rem" }}>{row.hotspots}</td>
+                    <td style={{ border: "1px solid #ccc", padding: "0.5rem" }}>{row.windspeed}</td>
+                    <td style={{ border: "1px solid #ccc", padding: "0.5rem" }}>{row.humidity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* --- Insights API section --- */}
+      <section style={{ marginTop: "2rem" }}>
+        <h2>Insights API</h2>
+
+        <label>Start Date: </label>
+        <input
+          type="date"
+          value={startDateInsights}
+          onChange={(e) => setStartDateInsights(e.target.value)}
+        />
+        <label style={{ marginLeft: "0.5rem" }}>End Date: </label>
+        <input
+          type="date"
+          value={endDateInsights}
+          onChange={(e) => setEndDateInsights(e.target.value)}
+        />
+        <button style={{ marginLeft: "0.5rem" }} onClick={loadInsights}>
+          Fetch Insights
+        </button>
+
+        {insightsLoading && <p>Loading insights...</p>}
+        {insightsError && <p style={{ color: "red" }}>Error: {insightsError}</p>}
+
+        {!insightsLoading && !insightsError && insightsData && (
+          <div style={{ marginTop: "1rem" }}>
+            <p>
+              <strong>Date Range:</strong> {insightsData.range.start} to {insightsData.range.end}
+            </p>
+            <ul>
+              {insightsData.messages.map((msg, idx) => (
+                <li key={idx}>{msg}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
     </div>
   );
 };
 
-export default DashboardTest;
+export default DashboardRouteTest;
