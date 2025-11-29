@@ -11,7 +11,7 @@ export default function Analee() {
             <img
               src="/images/about-me/profile-pictures/AnaleeProfilePic.jpg"
 
-              alt="Portrait of Linh"
+              alt="Portrait of Analee"
               className="w-32 h-32 rounded-full shadow-md object-cover"
             />
 
@@ -26,7 +26,8 @@ export default function Analee() {
           <section aria-labelledby="about-summary" className="space-y-2">
             <h2 id="about-summary" className="text-xl font-semibold" style={styles.subtitle}>Summary</h2>
             <p className="text-base-content/80" style={styles.text}>
-              Hi! I’m Analee
+            Hi! I’m Analee. I am the Backend and AI Developer for this project. I am respinsible for edsigning, training and 
+              testing our models as well as creating our initial migrations and tables for our database.
             </p>
           </section>
 
@@ -50,13 +51,13 @@ export default function Analee() {
                 <h3 className="font-semibold mb-2" style={styles.subtitle}>Projects</h3>
                 <ul className="list-disc list-inside space-y-1 text-base-content/80" style={styles.text}>
                   <li>
-                    <span className="font-bold">Sample Text</span> — Sample Text
+                    <span className="font-bold">Wild Sight</span> — Wild Fire detection system
                   </li>
                   <li>
-                    <span className="font-bold">Sample Text</span> — Sample Text
+                    <span className="font-bold">Foreg Tech</span> — Made to order computer parts web application
                   </li>
                   <li>
-                    <span className="font-bold">Sample Text</span> — Sample Text
+                    <span className="font-bold"> AI Agent Studio agent</span> — Agent to train, test and debgug fast formulas for customers.
                   </li>
                 </ul>
               </div>
@@ -67,7 +68,7 @@ export default function Analee() {
           <section aria-labelledby="about-hobbies" className="space-y-2">
             <h2 id="about-hobbies" className="text-xl font-semibold">Hobbies</h2>
             <p className="text-base-content/80">
-              Sample Text
+              Swimming, Running, Reading
             </p>
           </section>
 
