@@ -1,0 +1,36 @@
+{
+  "rows": [
+    {
+      "month": 6.53199268738574,
+      "dayofyear": 183.49908592321756,
+      "dayofweek": 3.002742230347349,
+      "quarter": 2.510968921389397,
+      "fires_last_7days": 7.497257769652651,
+      "fires_last_30days": 31.952468007312614,
+      "days_since_last_fire": 2.4049360146252283,
+      "month_avg_fires": 1.0722120658135283,
+      "quarter_avg_fires": 1.0722120658135286,
+      "tempmax_prev_day": 81.55548446069471,
+      "tempmax_7d_avg": 81.5548940106207,
+      "tempmax_30d_avg": 81.6691114386449,
+      "tempmin_prev_day": 60.64616087751371,
+      "tempmin_7d_avg": 60.6496439453295,
+      "tempmin_30d_avg": 60.731396786049025,
+      "humidity_prev_day": 62.51243144424132,
+      "humidity_7d_avg": 62.483397536345436,
+      "humidity_30d_avg": 62.4327134481075,
+      "windspeed_prev_day": 11.521572212065813,
+      "windspeed_7d_avg": 11.529265691651432,
+      "windspeed_30d_avg": 11.545442474146748,
+      "precip_prev_day": 0.08930438756855576,
+      "precip_7d_sum": 0.6251307129798908,
+      "precip_30d_sum": 2.6529168190127965,
+      "tempmax": 81.56718464351006,
+      "tempmin": 60.63903107861061,
+      "humidity": 62.51773308957952,
+      "windspeed": 11.521480804387568,
+      "precip": 0.08930438756855576
+    }
+  ],
+  "threshold": 0.25
+}

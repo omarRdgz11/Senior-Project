@@ -5,9 +5,10 @@ interface DateRangeFilterProps {
 
 const DateRangeFilter: React.FC<DateRangeFilterProps> = ({ filters, setFilters }) => {
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>, type: "start" | "end") => {
-    setFilters((prevFilters: any) => ({
-      ...prevFilters,
-      dateRange: { ...prevFilters.dateRange, [type]: e.target.value },
+    const value = e.target.value;
+    setFilters((prev: any) => ({
+      ...prev,
+      dateRange: { ...prev.dateRange, [type]: value },
     }));
   };
 

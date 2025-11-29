@@ -1,30 +1,100 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
+import { navbarStyles } from "./AppShell.styles";
+import { colors } from "../styles/colors";
 
 export default function AppShell() {
+  const location = useLocation();
+
   return (
-    <div className="min-h-screen bg-base-100 text-base-content">
-      <header className="navbar relative top-0 z-50 border-b border-base-200 bg-base-100/80 backdrop-blur">
-        <div className="container mx-auto flex items-center gap-2 px-4">
-          <NavLink to="/" className="font-semibold mr-2">Fire Detection System</NavLink>
-          <div className="ml-auto flex items-center gap-1">
-            <NavLink to="/" className="btn btn-ghost normal-case text-sm font-medium">Home</NavLink>
-            <NavLink to="/WildfireMap" className="btn btn-ghost normal-case text-sm font-medium">Map</NavLink>
-            <NavLink to="/about" className="btn btn-ghost normal-case text-sm font-medium">About</NavLink>
-            <NavLink to="/TestRawDetections" className="btn btn-ghost normal-case text -sm font-medium">Raw Detections — API Test</NavLink>
-          </div>
-        </div>
-      </header>
+    <div style={navbarStyles.body}>
+      <nav style={navbarStyles.navbar}>
+        <Link to="/" style={navbarStyles.logo}>
+          WildSight
+        </Link>
 
-      {/* IMPORTANT: this renders the current page */}
-      <main className="container mx-auto max-w-5xl p-6">
-        <Outlet />
-      </main>
+        <div style={navbarStyles.navLinks}>
+          <Link
+            to="/"
+            style={{
+              ...navbarStyles.link,
+              color: location.pathname === "/" ? navbarStyles.linkHover.color : colors.cream,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = navbarStyles.linkHover.color!)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color =
+                location.pathname === "/" ? navbarStyles.linkHover.color! : colors.cream)
+            }
+          >
+            Home
+          </Link>
 
-      <footer className="mt-12 border-t border-base-200">
-        <div className="container mx-auto p-6 text-sm text-base-content/70">
-          © {new Date().getFullYear()} Fire Detection
+          <Link
+            to="/about"
+            style={{
+              ...navbarStyles.link,
+              color:
+                location.pathname.startsWith("/about") ||
+                location.pathname === "/about"
+                  ? navbarStyles.linkHover.color
+                  : colors.cream,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = navbarStyles.linkHover.color!)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color =
+                location.pathname.startsWith("/about") ? navbarStyles.linkHover.color! : colors.cream)
+            }
+          >
+            About
+          </Link>
+
+          <Link
+            to="/wildfiremap"
+            style={{
+              ...navbarStyles.link,
+              color: location.pathname === "/wildfiremap" ? navbarStyles.linkHover.color : colors.cream,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = navbarStyles.linkHover.color!)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color =
+                location.pathname === "/wildfiremap"
+                  ? navbarStyles.linkHover.color!
+                  : colors.cream)
+            }
+          >
+            Map
+          </Link>
+
+          <Link
+            to="/testrawdetections"
+            style={{
+              ...navbarStyles.link,
+              color:
+                location.pathname === "/testrawdetections"
+                  ? navbarStyles.linkHover.color
+                  : colors.cream,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = navbarStyles.linkHover.color!)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color =
+                location.pathname === "/testrawdetections"
+                  ? navbarStyles.linkHover.color!
+                  : colors.cream)
+            }
+          >
+            API Test
+          </Link>
         </div>
-      </footer>
+      </nav>
+
+      <Outlet />
     </div>
   );
 }

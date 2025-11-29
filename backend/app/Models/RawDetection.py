@@ -1,5 +1,6 @@
 from sqlalchemy import func
 from app.extensions import db
+from geoalchemy2 import Geometry
 
 class RawDetection(db.Model):
     __tablename__ = "raw_detections"
@@ -32,7 +33,18 @@ class RawDetection(db.Model):
 
     # daynight → D or N (day vs night pass).
 
-    timeofday = db.Column(db.String(1), nullable = False)
+    daynight = db.Column(db.String(1), nullable = False)
+
+        # ADDED THESE COLUMNS SO THAT WE CAN TRACK SPATIAL DATA
+    
+    # combined UTC timestamp
+    acq_ts_utc = db.Column(db.DateTime(timezone=True))    
+    # default to acq_date + acq_time  
+    source_id = db.Column(db.String(20))    
+    # satellite processing level: NRT, SP               
+    processing_level = db.Column(db.String(5))  
+     # PostGIS geometry          
+    geom = db.Column(Geometry(geometry_type='POINT', srid=4326)) 
 
 
     
