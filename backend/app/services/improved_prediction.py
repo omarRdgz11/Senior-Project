@@ -1,8 +1,6 @@
 # backend/app/services/improved_prediction.py
-
 from datetime import date as Date
 import pandas as pd
-
 from app.improved_model import (
     engineer_features,
     get_latest_features_for_prediction,
@@ -58,7 +56,6 @@ def build_daily_history(target_date: Date) -> pd.DataFrame:
             "precip",
         ],
     )
-
     # 3) Outer-merge on acq_date; fill missing fire_count with 0
     history_df = (
         pd.merge(weather_df, fires_df, on="acq_date", how="left")
@@ -66,22 +63,16 @@ def build_daily_history(target_date: Date) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     history_df["fire_count"] = history_df["fire_count"].fillna(0).astype(int)
-
     return history_df
-
-
 def predict_daily_fire_risk(target_date: Date):
     """
     High-level service: given a date, return model outputs + feature row.
     """
     history_df = build_daily_history(target_date)
-
     # Produce engineered features & extract last day as dict
     feature_row = get_latest_features_for_prediction(history_df)
-
     # Run both models
     result = predict_fire_risk(feature_row)
-
     return {
         "date": target_date.isoformat(),
         "features_used": feature_row,
