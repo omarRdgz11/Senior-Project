@@ -7,7 +7,8 @@ export default function Analee() {
           {/* Picture */}
           <header className="flex flex-col items-center text-center gap-4">
             <img
-              src="/images/about-me/profile-pictures/" /* <- replace with your path */
+              src="/images/about-me/profile-pictures/AnaleeProfilePic.jpg"
+
               alt="Portrait of Linh"
               className="w-32 h-32 rounded-full shadow-md object-cover"
             />
@@ -21,8 +22,8 @@ export default function Analee() {
 
           {/* Summary */}
           <section aria-labelledby="about-summary" className="space-y-2">
-            <h2 id="about-summary" className="text-xl font-semibold">Summary</h2>
-            <p className="text-base-content/80">
+            <h2 id="about-summary" className="text-xl font-semibold" style={styles.subtitle}>Summary</h2>
+            <p className="text-base-content/80" style={styles.text}>
               Hi! I’m Analee
             </p>
           </section>
@@ -37,7 +38,7 @@ export default function Analee() {
                 <h3 className="font-semibold mb-2">Internships</h3>
                 <ul className="list-disc list-inside space-y-1 text-base-content/80">
                   <li>
-                    <span className="font-medium">Example Text</span>
+                    <span className="font-medium"> SaaS Solutions Engineer at Oracle</span>
                   </li>
                 </ul>
               </div>
