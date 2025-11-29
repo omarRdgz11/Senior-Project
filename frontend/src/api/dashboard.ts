@@ -54,6 +54,27 @@ export type FiresSummaryResponse = {
   fires_last_24h: number;
 };
 
+export type WatchlistItem = {
+  name: string;
+  risk: string;
+  hotspots: number;
+  windspeed: number;
+  humidity: number;
+};
+
+export type WatchlistResponse = {
+  date: string;
+  items: WatchlistItem[];
+};
+
+export type InsightsResponse = {
+  range: {
+    start: string;
+    end: string;
+  };
+  messages: string[];
+};
+
 /* ================== Core fetch wrapper (re-use from predict.ts) ================== */
 async function fetchJSON(url: string, init?: RequestInit) {
   const res = await fetch(url, init);
@@ -125,5 +146,22 @@ export async function fetchFiresSummary(
 ): Promise<FiresSummaryResponse> {
   const qs = new URLSearchParams({ start, end });
   const url = `${API_BASE}/api/dashboard/fires/summary?${qs.toString()}`;
+  return fetchJSON(url);
+}
+
+/**
+ *  GET /api/dashboard/watchlist?date=YYYY-MM-DD
+ */
+export async function fetchWatchlist(date: string): Promise<WatchlistResponse> {
+  const url = `${API_BASE}/api/dashboard/watchlist?date=${date}`;
+  return fetchJSON(url);
+}
+
+export async function fetchInsights(
+  start: string, 
+  end: string
+): Promise<InsightsResponse> {
+  const qs = new URLSearchParams({ start, end });
+  const url = `${API_BASE}/api/dashboard/insights?${qs.toString()}`;
   return fetchJSON(url);
 }

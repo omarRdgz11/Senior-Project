@@ -9,11 +9,14 @@ from app.improved_model import (
 from app.Models.Weather.OpenMeteo_weather import OpenMeteoWeather
 from app.Models.Fire.travis_fires_daily import TravisFiresDaily
 from app.extensions import db
+
+
 def build_daily_history(target_date: Date) -> pd.DataFrame:
     """
     Query your DB for all daily rows up to target_date for the region of interest
     and return a DataFrame with the RAW columns expected by engineer_features().
     """
+
     # 1) Fire data – already daily with fire_count
     fires = (
         db.session.query(
@@ -24,7 +27,9 @@ def build_daily_history(target_date: Date) -> pd.DataFrame:
         .order_by(TravisFiresDaily.acq_date)
         .all()
     )
+
     fires_df = pd.DataFrame(fires, columns=["acq_date", "fire_count"])
+
     # 2) Daily weather – use datetime, but label it as acq_date
     weather = (
         db.session.query(
@@ -39,6 +44,7 @@ def build_daily_history(target_date: Date) -> pd.DataFrame:
         .order_by(OpenMeteoWeather.datetime)
         .all()
     )
+
     weather_df = pd.DataFrame(
         weather,
         columns=[

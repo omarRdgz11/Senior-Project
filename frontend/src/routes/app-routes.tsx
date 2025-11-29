@@ -11,6 +11,7 @@ import WildfireMapPage from "../pages/WildfireMap/WildfireMapPage";
 import TestRawDetections from "../pages/TestPages/TestRawDetections";
 import ModelTest from "../pages/TestPages/ModelTest";
 import DashboardTest from "../pages/TestPages/DashboardTest";
+import DashboardRouteTest from "../pages/TestPages/DashboardRouteTest";
 // Add more imports as new teammates create files
 
 const NotFound = () => (
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
       { path: "about/people/Analee", element: <Analee />},
       { path: "ModelTest", element: <ModelTest />},
       { path: "dashboardtest", element: <DashboardTest /> },
+      { path: "dashboardroutetest", element: <DashboardRouteTest /> },
 
       { path: "*", element: <NotFound /> },
     ],
