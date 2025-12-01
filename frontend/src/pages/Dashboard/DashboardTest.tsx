@@ -1,6 +1,16 @@
 // src/pages/TestPages/DashboardTest.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { styles as aboutStyles } from "../About/AboutPage.styles";
+
+import {
+  fetchDashboardOverview,
+  fetchWatchlist,
+  fetchInsights,
+  type DashboardOverview,
+  type WatchlistItem,
+} from "../../api/dashboard";
+
+/* ================== Local mock types (for sections not wired yet) ================== */
 
 type FirmsPoint = {
   id: number;
@@ -34,12 +44,6 @@ const mockHourlyWeather: HourlyWeather[] = [
   { hour: "22:00", temp: 29, wind: 14, humidity: 32 },
 ];
 
-const watchlist = [
-  { name: "Austin Metro", risk: "High", hotspots: 24, wind: 22, humidity: 18 },
-  { name: "Hill Country West", risk: "Moderate", hotspots: 9, wind: 18, humidity: 24 },
-  { name: "I-35 Corridor", risk: "Elevated", hotspots: 14, wind: 26, humidity: 16 },
-];
-
 const riskBadge: Record<string, string> = {
   Low: "badge-success",
   Moderate: "badge-info",
@@ -47,7 +51,63 @@ const riskBadge: Record<string, string> = {
   High: "badge-error",
 };
 
+// Helper to shift ISO date strings by N days
+function shiftDate(dateStr: string, deltaDays: number): string {
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() + deltaDays);
+  return d.toISOString().slice(0, 10);
+}
+
+// You may want to set this to a date you KNOW is in your DB:
+const DEFAULT_DATE = new Date().toISOString().slice(0, 10);
+
+/* ================== Component ================== */
+
 export default function DashboardTest() {
+  const [date, setDate] = useState<string>(DEFAULT_DATE);
+
+  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [insights, setInsights] = useState<string[]>([]);
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      setError(null);
+
+      // For insights, use a small range ending at `date`
+      const end = date;
+      const start = shiftDate(date, -6); // last 7 days (inclusive)
+
+      try {
+        const [ov, wl, inRes] = await Promise.all([
+          fetchDashboardOverview(date),
+          fetchWatchlist(date),
+          fetchInsights(start, end),
+        ]);
+
+        setOverview(ov);
+        setWatchlist(wl.items);
+        setInsights(inRes.messages);
+      } catch (err: any) {
+        console.error("Failed to load dashboard:", err);
+        setError(err.message ?? "Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
+  }, [date]);
+
+  const risk = overview?.risk;
+  const weather = overview?.weather ?? null;
+
+  const riskLabelBadgeClass = risk ? riskBadge[risk.label] ?? "badge-ghost" : "badge-ghost";
+
   return (
     <div
       className="space-y-6 w-full"
@@ -60,10 +120,32 @@ export default function DashboardTest() {
             Operations Dashboard
           </h1>
           <p style={aboutStyles.text}>
-            This prototype shows how WildSight could combine FIRMS satellite detections
-            and weather conditions into a single view for analysts in the Austin region.
-            All values below are mock data, wired a placeholder while we finalize backend integration.
+            This view combines FIRMS-based fire activity and Open-Meteo weather summaries
+            for Travis County. The top section and right-hand panels are powered by live
+            backend routes under <code>/api/dashboard</code>, while the FIRMS table and
+            hourly chart are still using placeholder values.
           </p>
+
+          {/* Small date selector so you can test different days */}
+          <div className="flex items-center gap-2 text-sm">
+            <span style={aboutStyles.text}>Dashboard date:</span>
+            <input
+              type="date"
+              className="input input-bordered input-sm"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            {loading && (
+              <span className="text-xs" style={aboutStyles.text}>
+                Loading…
+              </span>
+            )}
+          </div>
+          {error && (
+            <div className="mt-2 text-xs text-red-600">
+              {error}
+            </div>
+          )}
         </div>
       </div>
 
@@ -78,25 +160,28 @@ export default function DashboardTest() {
               <div className="card-body space-y-3">
                 <div className="flex justify-between gap-3">
                   <div>
-                    <div style={aboutStyles.subtitle}>Austin Region (30km)</div>
+                    <div style={aboutStyles.subtitle}>
+                      {overview?.region ?? "Travis County"}
+                    </div>
                     <div className="text-xs" style={aboutStyles.text}>
-                      Based on recent FIRMS detections & forecasted conditions
+                      Based on recent fire activity and same-day weather conditions
                     </div>
                   </div>
                   <div className="text-right">
                     <div
-                      className="px-3 py-1 rounded-full text-xs font-semibold"
+                      className={`px-3 py-1 rounded-full text-xs font-semibold badge ${riskLabelBadgeClass}`}
                       style={{
                         ...aboutStyles.abtBtn,
-                        backgroundColor: "#b6402b",
-                        borderColor: "#b6402b",
-                        color: "#fff",
+                        // Let the badge color dominate, but keep rounded + font
+                        backgroundColor: undefined,
+                        borderColor: "transparent",
+                        color: undefined,
                       }}
                     >
-                      Overall Risk: Elevated
+                      Overall Risk: {risk?.label ?? "—"}
                     </div>
                     <div className="text-[0.7rem] mt-1" style={aboutStyles.text}>
-                      Updated 09:03 local
+                      Date: {overview?.date ?? date}
                     </div>
                   </div>
                 </div>
@@ -110,7 +195,7 @@ export default function DashboardTest() {
                         marginBottom: 0,
                       }}
                     >
-                      0.63
+                      {risk ? risk.score.toFixed(2) : "—"}
                     </div>
                     <div className="text-xs" style={aboutStyles.text}>
                       Composite probability (0–1)
@@ -118,13 +203,15 @@ export default function DashboardTest() {
                   </div>
                   <div className="space-y-1 text-xs">
                     <div style={aboutStyles.text}>
-                      • 24 hotspots in last 24h within AOI
+                      • {risk?.fires_last_24h ?? "—"} hotspots in last 24h (daily aggregate)
                     </div>
                     <div style={aboutStyles.text}>
-                      • 8 high-confidence (&gt;80%) pixels
+                      • Avg humidity driver:{" "}
+                      {risk ? `${risk.drivers.avg_humidity}%` : "—"}
                     </div>
                     <div style={aboutStyles.text}>
-                      • Warm, windy &amp; dry: favorable for spread if ignition occurs
+                      • Avg wind driver:{" "}
+                      {risk ? `${risk.drivers.avg_wind} km/h` : "—"}
                     </div>
                   </div>
                 </div>
@@ -137,33 +224,51 @@ export default function DashboardTest() {
                 <div className="flex justify-between items-center">
                   <div style={aboutStyles.subtitle}>Current Conditions</div>
                   <div className="text-[0.65rem]" style={aboutStyles.text}>
-                    Mock forecast feed
+                    From Open-Meteo daily feed
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 text-xs">
-                  <div>
-                    <div
-                      style={{
-                        ...aboutStyles.title,
-                        fontSize: "1.9rem",
-                        marginBottom: 0,
-                      }}
-                    >
-                      36°C
+
+                {weather ? (
+                  <div className="grid grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <div
+                        style={{
+                          ...aboutStyles.title,
+                          fontSize: "1.9rem",
+                          marginBottom: 0,
+                        }}
+                      >
+                        {weather.tempmax != null ? `${weather.tempmax.toFixed(1)}°C` : "—"}
+                      </div>
+                      <div style={aboutStyles.text}>
+                        Min:{" "}
+                        {weather.tempmin != null ? `${weather.tempmin.toFixed(1)}°C` : "—"}
+                      </div>
                     </div>
-                    <div style={aboutStyles.text}>Feels like 38°C</div>
+                    <div className="space-y-1" style={aboutStyles.text}>
+                      <div>
+                        Humidity:{" "}
+                        {weather.humidity != null ? `${weather.humidity}%` : "—"}
+                      </div>
+                      <div>
+                        Wind:{" "}
+                        {weather.windspeed != null
+                          ? `${weather.windspeed} km/h`
+                          : "—"}
+                      </div>
+                      <div>Precip: {weather.precip != null ? `${weather.precip} mm` : "—"}</div>
+                    </div>
+                    <div className="space-y-1" style={aboutStyles.text}>
+                      <div>Source: OpenMeteoWeather</div>
+                      <div>Record: {weather.datetime?.slice(0, 10)}</div>
+                      <div>RH &amp; wind feed risk score above</div>
+                    </div>
                   </div>
-                  <div className="space-y-1" style={aboutStyles.text}>
-                    <div>Humidity: 19%</div>
-                    <div>Wind: 22 km/h SW</div>
-                    <div>Gusts: 28 km/h</div>
+                ) : (
+                  <div className="text-xs" style={aboutStyles.text}>
+                    No weather data available for {date}. Try another date.
                   </div>
-                  <div className="space-y-1" style={aboutStyles.text}>
-                    <div>Pressure: 1009 hPa</div>
-                    <div>UV Index: 8</div>
-                    <div>Cloud Cover: 5%</div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -198,20 +303,20 @@ export default function DashboardTest() {
                 }}
               >
                 Map placeholder — here we’ll render Leaflet/MapTiler with FIRMS detections and
-                model probabilities
+                model probabilities.
               </div>
             </div>
           </div>
 
           {/* FIRMS + Hourly */}
           <div className="grid gap-4 lg:grid-cols-2">
-            {/* FIRMS table */}
+            {/* FIRMS table (still mock) */}
             <div className="card" style={aboutStyles.card}>
               <div className="card-body space-y-2">
                 <div className="flex justify-between items-center">
                   <div style={aboutStyles.subtitle}>Recent FIRMS Detections</div>
                   <div className="text-[0.65rem]" style={aboutStyles.text}>
-                    Last 24 hours • mock
+                    Last 24 hours • placeholder
                   </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -254,7 +359,7 @@ export default function DashboardTest() {
               </div>
             </div>
 
-            {/* Hourly conditions */}
+            {/* Hourly conditions (still mock) */}
             <div className="card" style={aboutStyles.card}>
               <div className="card-body space-y-2">
                 <div className="flex justify-between items-center">
@@ -298,7 +403,7 @@ export default function DashboardTest() {
 
         {/* Right Column: Watchlist / Insights / Alerts */}
         <div className="grid gap-4">
-          {/* Watchlist */}
+          {/* Watchlist (LIVE) */}
           <div className="card" style={aboutStyles.card}>
             <div className="card-body space-y-2">
               <div className="flex justify-between items-center">
@@ -308,56 +413,62 @@ export default function DashboardTest() {
                 </button>
               </div>
               <div className="space-y-2 text-[0.75rem]">
-                {watchlist.map((w) => (
-                  <div
-                    key={w.name}
-                    className="flex justify-between items-center px-2 py-2 rounded-xl"
-                    style={{ backgroundColor: "#faf6ee" }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          ...aboutStyles.subtitle,
-                          fontSize: "0.9rem",
-                          marginBottom: 0,
-                        }}
-                      >
-                        {w.name}
+                {watchlist.length === 0 ? (
+                  <div style={aboutStyles.text}>No regions available for this date.</div>
+                ) : (
+                  watchlist.map((w) => (
+                    <div
+                      key={w.name}
+                      className="flex justify-between items-center px-2 py-2 rounded-xl"
+                      style={{ backgroundColor: "#faf6ee" }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            ...aboutStyles.subtitle,
+                            fontSize: "0.9rem",
+                            marginBottom: 0,
+                          }}
+                        >
+                          {w.name}
+                        </div>
+                        <div style={aboutStyles.text}>
+                          {w.hotspots} hotspots • Wind {w.windspeed} km/h • RH {w.humidity}%
+                        </div>
                       </div>
-                      <div style={aboutStyles.text}>
-                        {w.hotspots} hotspots • Wind {w.wind} km/h • RH {w.humidity}%
+                      <div>
+                        <span className={`badge badge-sm ${riskBadge[w.risk] ?? "badge-ghost"}`}>
+                          {w.risk}
+                        </span>
                       </div>
                     </div>
-                    <div>
-                      <span className={`badge badge-sm ${riskBadge[w.risk]}`}>
-                        {w.risk}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
 
-          {/* Model Insights */}
+          {/* Model Insights (LIVE) */}
           <div className="card" style={aboutStyles.card}>
             <div className="card-body space-y-2">
-              <div style={aboutStyles.subtitle}>Model Insights (Mock)</div>
-              <ul className="list-disc list-inside text-[0.75rem]">
-                <li style={aboutStyles.text}>
-                  Hotspots cluster along NW perimeter with overlapping low humidity.
-                </li>
-                <li style={aboutStyles.text}>
-                  7-day fire activity is <strong>+18%</strong> vs seasonal baseline.
-                </li>
-                <li style={aboutStyles.text}>
-                  Next 24h: elevated spread potential; prioritize Austin Metro AOI.
-                </li>
-              </ul>
+              <div style={aboutStyles.subtitle}>Model Insights</div>
+              {insights.length === 0 ? (
+                <div className="text-[0.75rem]" style={aboutStyles.text}>
+                  No insights available for this range.
+                </div>
+              ) : (
+                <ul className="list-disc list-inside text-[0.75rem]">
+                  {insights.map((msg, idx) => (
+                    <li key={idx} style={aboutStyles.text}>
+                      {msg}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 
-          {/* Alerts */}
+          {/* Alerts (still static for now) */}
           <div className="card" style={aboutStyles.card}>
             <div className="card-body space-y-2">
               <div style={aboutStyles.subtitle}>Alerts &amp; Tasks</div>
