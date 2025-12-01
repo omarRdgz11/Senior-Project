@@ -10,8 +10,9 @@ import Analee from "../pages/About/People/Analee"
 import WildfireMapPage from "../pages/WildfireMap/WildfireMapPage";
 import TestRawDetections from "../pages/TestPages/TestRawDetections";
 import ModelTest from "../pages/TestPages/ModelTest";
-import DashboardTest from "../pages/TestPages/DashboardTest";
+import DashboardTest from "../pages/Dashboard/DashboardTest";
 import DashboardRouteTest from "../pages/TestPages/DashboardRouteTest";
+import DashboardTestTwo from "../pages/DashboardTestTwo";
 // Add more imports as new teammates create files
 
 const NotFound = () => (
@@ -38,6 +39,8 @@ export const router = createBrowserRouter([
       { path: "ModelTest", element: <ModelTest />},
       { path: "dashboardtest", element: <DashboardTest /> },
       { path: "dashboardroutetest", element: <DashboardRouteTest /> },
+
+      { path: "dashboardTestTwo", element: <DashboardTestTwo />},
 
       { path: "*", element: <NotFound /> },
     ],

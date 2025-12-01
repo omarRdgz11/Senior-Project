@@ -1,3 +1,4 @@
+# backend/app/Routes/Dashboard/insights.py
 from flask import Blueprint, request, jsonify
 from datetime import date
 from app.extensions import db

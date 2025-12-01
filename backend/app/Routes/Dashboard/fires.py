@@ -1,3 +1,4 @@
+# backend/app/Routes/Dashboard/fires.py
 from flask import Blueprint, request, jsonify
 from datetime import timedelta, date
 from app.extensions import db
