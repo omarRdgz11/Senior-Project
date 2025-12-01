@@ -4,7 +4,8 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import FilterSidebar from "../../components/Sidebar/FilterSidebar";
 import { styles } from "./WildfireMapPage.styles";
-import { predictPointGET, fetchFirms } from "../../api/predict"; 
+import { fetchFirms } from "../../api/predict"; 
+import { fetchDailyFireRisk } from "../../api/dailyFireRisk";
 
 const MAPTILER_KEY = import.meta.env.VITE_MAPTILER_KEY;
 
@@ -109,36 +110,38 @@ export default function WildfireMapPage() {
           end,
           max: 8000,
         }),
-        predictPointGET({
-          lat: centerLat,
-          lon: centerLon,
-          date: start,
-          radius_km: filters.radius_km,
-          threshold: filters.threshold,
-        }),
+        fetchDailyFireRisk(start),
       ]);
 
-      // --- Combine FIRMS and Prediction ---
-      const combined = [
-        ...firmsData.items.map((f: any) => ({
-          ...f,
-          lat: f.latitude ?? f.lat,
-          lon: f.longitude ?? f.lon,
-          type: "firms",
-        })),
-        { 
-          ...predictData,
-          lat: predictData.where?.lat,
-          lon: predictData.where?.lon,
-          type: "prediction",
-        },
-      ];
+      // --- Convert FIRMS ---
+      const firmsMarkers = firmsData.items.map((f: any) => ({
+        ...f,
+        lat: f.latitude ?? f.lat,
+        lon: f.longitude ?? f.lon,
+        type: "firms",
+      }));
+
+      // --- Convert Daily Fire Risk into a "prediction" marker ---
+      const predictionMarker = {
+        lat: centerLat,
+        lon: centerLon,
+
+        date: start,
+        probability: predictData.models.champion.prob ?? 0,
+        threshold: predictData.models.champion.threshold,
+
+        model_outputs: predictData.models,
+
+        type: "prediction",
+      };
+
+      const combined = [...firmsMarkers, predictionMarker];
 
       // --- Filter combined data ---
       const filteredData = combined.filter((fire) => {
         const lat = fire.lat;
         const lon = fire.lon;
-        const date = fire.date || fire.when?.date;
+        const date = fire.date;
 
         if (!lat || !lon || !date) return false;
 
@@ -149,22 +152,13 @@ export default function WildfireMapPage() {
           lon <= filters.coordinates.maxLon;
 
         const inDateRange = date >= start && date <= end;
-        
-        const meetsThreshold =
-          fire.type === "prediction"
-            ? (fire.confidence ?? fire.probability ?? 0) >= filters.threshold
-            : true;
+
+        if (!inBounds || !inDateRange ) return false;
 
         const now = new Date().toISOString().slice(0, 10);
-
         const isFuture = date >= now;
         const isPast = date <= now;
 
-        if (!inBounds || !inDateRange || !meetsThreshold) return false;
-
-        // Only allow:
-        // - FIRMS fires for past dates
-        // - Predictions for future dates
         if (isPast && fire.type === "firms") return true;
         if (isFuture && fire.type === "prediction") return true;
 
@@ -181,7 +175,7 @@ export default function WildfireMapPage() {
   }
 
   loadData();
-}, [filters.coordinates, filters.dateRange, filters.radius_km, filters.threshold]);
+}, [filters.coordinates, filters.dateRange, filters.radius_km]);
 
 
   // --- Error States ---
@@ -242,9 +236,8 @@ export default function WildfireMapPage() {
                         <strong>Longitude:</strong> {f.lon.toFixed(4)} <br />
                         <strong>Probability:</strong>{" "}
                         {(f.probability * 100).toFixed(2)}% <br />
-                        <strong>Threshold:</strong> {f.threshold_used ?? "0.25"} <br />
-                        <strong>Date:</strong> {f.when?.date ?? "N/A"} <br />
-                        <strong>Radius:</strong> {f.where?.radius_km ?? "N/A"} km
+                        <strong>Threshold:</strong> {(f.threshold.toFixed(2))} <br />
+                        <strong>Date:</strong> {f.date ?? "N/A"} <br />                        
                       </>
                     )}
                   </Popup>

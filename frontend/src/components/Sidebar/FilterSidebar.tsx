@@ -24,7 +24,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ filters, setFilters }) =>
         <CoordinateFilter filters={filters} setFilters={setFilters} />
 
         {/* Threshold Filter */}
-        <ThresholdFilter filters={filters} setFilters={setFilters} />
+        {/* <ThresholdFilter filters={filters} setFilters={setFilters} /> */}
 
         {/* Radius Filter */}
         {/* <RadiusFilter filters={filters} setFilters={setFilters} /> */}
