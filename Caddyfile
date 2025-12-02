@@ -1,0 +1,13 @@
+windssight.com, www.windssight.com {
+    encode gzip
+
+    # API routes -> backend container
+    handle_path /api/* {
+        rewrite * {path}
+        reverse_proxy backend:5005
+    }
+
+    # Everything else -> built frontend
+    root * /srv
+    file_server
+}
