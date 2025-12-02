@@ -1,34 +1,94 @@
-# docker-compose.yml
-# Production-leaning setup for a single droplet WITHOUT a domain (yet).
-# - DB is NOT exposed publicly (safer).
-# - Backend (5005), Frontend (5173), Adminer (8080) are reachable via droplet IP and those ports.
-# - When you later add a reverse proxy (Caddy/Nginx) + domain/HTTPS:
-#   * Bind app ports to 127.0.0.1 and let the proxy serve 80/443
-#   * Or remove public port mappings entirely and keep everything internal.
+# services:
+#   db:
+#     image: postgis/postgis:16-3.4
+#     container_name: fire-db
+#     restart: unless-stopped
+#     ports:
+#       - "${POSTGRES_PORT:-5432}:5432"
+#     environment:
+#       POSTGRES_USER: ${POSTGRES_USER:-app}
+#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+#       POSTGRES_DB: ${POSTGRES_DB:-appdb}
+#     volumes:
+#       - db_data:/var/lib/postgresql/data
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-appdb}"]
+#       interval: 5s
+#       timeout: 5s
+#       retries: 10
+
+
+#   adminer:
+#     image: adminer:latest
+#     container_name: fire-adminer
+#     restart: unless-stopped
+#     depends_on:
+#       - db
+#     ports:
+#       - "8080:8080"
+#     environment:
+#       # Adminer uses 8080 in its official image; we expose as-is.
+#       # Access via http://localhost:8080
+#       ADMINER_DEFAULT_SERVER: db
+
+
+#   backend:
+#     build:
+#       context: ./backend
+#       dockerfile: Dockerfile
+#     container_name: fire-backend
+#     restart: unless-stopped
+#     env_file: .env
+#     environment:
+#       DOCKER: "1"
+#     # Mount ONLY the data folder into the exact path the app reads
+#     volumes:
+#       - ./backend/data:/app/backend/data:ro
+#     ports:
+#       - "5005:5005"
+#     depends_on:
+#       db:
+#         condition: service_healthy
+
+
+
+#   frontend:
+#     image: node:20-alpine
+#     container_name: fire-frontend
+#     working_dir: /usr/src/app
+#     environment:
+#       DOCKER: "1"
+#     volumes:
+#       - ./frontend:/usr/src/app
+#     command: sh -c "npm install && npm run dev -- --host"
+#     ports:
+#       - "5173:5173"
+#     depends_on:
+#       - backend
+
+
+# volumes:
+#   db_data:
 
 services:
   db:
     image: postgis/postgis:16-3.4
     container_name: fire-db
     restart: unless-stopped
-    # IMPORTANT: Do NOT publish DB port publicly in production.
-    # Remove or comment out the next lines if present:
-    # ports:
-    #   - "${POSTGRES_PORT:-5432}:5432"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-app}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
       POSTGRES_DB: ${POSTGRES_DB:-appdb}
-    # Persist the database on the HOST so it survives container rebuilds.
-    # Adjust the host path if your project lives elsewhere on the droplet.
     volumes:
-      - /opt/senior-project/data/db:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-appdb}"]
       interval: 5s
       timeout: 5s
       retries: 10
-    networks: [fire-net]
+
 
   adminer:
     image: adminer:latest
@@ -39,13 +99,16 @@ services:
     ports:
       - "8080:8080"
     environment:
+
       ADMINER_DEFAULT_SERVER: db
-    networks: [fire-net]
-    # SECURITY TIP (optional): Instead of exposing 8080 publicly, you can bind to localhost
-    # and reach it over an SSH tunnel:
-    # ports:
-    #   - "127.0.0.1:8080:8080"
-    # From your laptop (example): ssh -L 8080:localhost:8080 deploy@<YOUR_DROPLET_IP>
+
+  # Redis broker/result backend for Celery
+  redis:
+    image: redis:7-alpine
+    container_name: fire-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
 
   backend:
     build:
@@ -56,57 +119,74 @@ services:
     env_file: .env
     environment:
       DOCKER: "1"
-      FLASK_ENV: production
-      # If your app uses a factory in backend/app/__init__.py, this usually works:
-      FLASK_APP: app
-      PYTHONUNBUFFERED: "1"
-    # Mount ONLY the data folder so ingesters can see CSVs
+    # Mount ONLY the data folder into the exact path the app reads
     volumes:
-      - ./backend/data:/app/data:ro
-    # Ensure this matches your Dockerfile layout:
-    # If your Dockerfile uses WORKDIR /app, keep /app here.
-    working_dir: /app
-    # Use a non-debug command to avoid restart loops:
-    command: flask run --host=0.0.0.0 --port=5005
+      - ./backend/data:/app/backend/data:ro
     ports:
       - "5005:5005"
     depends_on:
       db:
         condition: service_healthy
-    networks: [fire-net]
+      redis:
+        condition: service_started
 
+  # Celery worker for background jobs (data ingest, etc.)
+  celery-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fire-celery-worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DOCKER: "1"
+    # If your tasks need to read the same data folder, mount it too
+    volumes:
+      - ./backend/data:/app/backend/data:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: >
+      celery -A app.celery_app.celery worker
+      --loglevel=info
 
-
+  # Celery beat for scheduled tasks (daily ingest)
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fire-celery-beat
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DOCKER: "1"
+    volumes:
+      - ./backend/data:/app/backend/data:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    command: >
+      celery -A app.celery_app.celery beat
+      --loglevel=info
 
   frontend:
-    # Quick/simple approach using the Vite dev/preview server.
-    # For a real prod build, you'd normally build static files and serve via Caddy/Nginx.
     image: node:20-alpine
     container_name: fire-frontend
     working_dir: /usr/src/app
     environment:
       DOCKER: "1"
-      # IMPORTANT: In your .env, set VITE_API_BASE to:
-      #   http://<YOUR_DROPLET_IP>:5005
-      # or (if your backend routes are under /api) something like:
-      #   http://<YOUR_DROPLET_IP>:5005
-      #
-      # Later, when you get a domain + HTTPS, switch to:
-      #   https://your-domain.com
     volumes:
       - ./frontend:/usr/src/app
-    # "dev" is fine for now; "preview" also works if you build first.
-    # If you switch to preview:
-    #   command: sh -c "npm ci && npm run build && npm run preview -- --host 0.0.0.0 --port 5173"
-    command: sh -c "npm ci && npm run dev -- --host 0.0.0.0 --port 5173"
+    command: sh -c "npm install && npm run dev -- --host"
     ports:
       - "5173:5173"
     depends_on:
       - backend
-    networks: [fire-net]
-
-networks:
-  fire-net:
-    driver: bridge
 
 
+volumes:
+  db_data:
