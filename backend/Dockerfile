@@ -41,6 +41,6 @@ ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=5005
 EXPOSE 5005
 
-# ---- Default command: dev server with auto-reload ----
-CMD ["flask", "run", "--debug"]
+# ---- Default command: Gunicorn production server ----
+CMD ["gunicorn", "--bind", "0.0.0.0:5005", "--workers", "4", "--timeout", "60", "app:app"]
 

@@ -1,0 +1,28 @@
+# Development overrides: expose ports for local development
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  db:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6379:6379"
+
+  backend:
+    # Mount source code for hot-reload in dev
+    volumes:
+      - ./backend:/app/backend
+    ports:
+      - "5005:5005"
+    # Override to use Flask dev server
+    command: ["flask", "run", "--debug"]
+
+  frontend:
+    ports:
+      - "5173:5173"
+
+  adminer:
+    ports:
+      - "8080:8080"

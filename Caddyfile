@@ -9,5 +9,6 @@ windssight.com, www.windssight.com {
 
     # Everything else -> built frontend
     root * /srv
+    try_files {path} /index.html
     file_server
 }

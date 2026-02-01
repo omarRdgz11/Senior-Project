@@ -75,8 +75,7 @@ services:
     image: postgis/postgis:16-3.4
     container_name: fire-db
     restart: unless-stopped
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    # ports: []  # Use docker-compose.dev.yml to expose locally
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-app}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
@@ -96,8 +95,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
-    ports:
-      - "8080:8080"
+    # ports: []  # Use docker-compose.dev.yml to expose locally
     environment:
 
       ADMINER_DEFAULT_SERVER: db
@@ -107,8 +105,7 @@ services:
     image: redis:7-alpine
     container_name: fire-redis
     restart: unless-stopped
-    ports:
-      - "6379:6379"
+    # ports: []  # Use docker-compose.dev.yml to expose locally
 
   backend:
     build:
@@ -121,9 +118,8 @@ services:
       DOCKER: "1"
     # Mount ONLY the data folder into the exact path the app reads
     volumes:
-      - ./backend:/app/backend
-    ports:
-      - "5005:5005"
+      - ./backend/data:/app/backend/data:ro
+    # ports: []  # Use docker-compose.dev.yml to expose locally
     depends_on:
       db:
         condition: service_healthy
@@ -182,8 +178,7 @@ services:
     volumes:
       - ./frontend:/usr/src/app
     command: sh -c "npm install && npm run dev -- --host"
-    ports:
-      - "5173:5173"
+    # ports: []  # Use docker-compose.dev.yml to expose locally
     depends_on:
       - backend
 
