@@ -32,6 +32,11 @@ services:
 
   # Frontend: Build on host BEFORE docker-compose up, not in container
   # frontend-build service removed - build locally with: cd frontend && npm run build
+  # Disable the dev server container in production
+  frontend:
+    command: ["sh", "-c", "echo 'frontend disabled in prod'; sleep infinity"]
+    restart: "no"
+    ports: []
 
   # Caddy reverse proxy & static server
   caddy:
