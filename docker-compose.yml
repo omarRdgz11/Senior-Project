@@ -121,7 +121,7 @@ services:
       DOCKER: "1"
     # Mount ONLY the data folder into the exact path the app reads
     volumes:
-      - ./backend/data:/app/backend/data:ro
+      - ./backend:/app/backend
     ports:
       - "5005:5005"
     depends_on:

@@ -9,7 +9,16 @@ services:
 
   # Backend should only be reachable internally by Caddy
   backend:
+    env_file: .env.production
     ports: []
+
+  # Celery worker - use production environment
+  celery-worker:
+    env_file: .env.production
+
+  # Celery beat - use production environment
+  celery-beat:
+    env_file: .env.production
 
   # Optional: Adminer
   # You can comment this section out in prod if you don't want it exposed publicly
@@ -24,6 +33,7 @@ services:
     image: node:20-alpine
     container_name: fire-frontend-build
     working_dir: /usr/src/app
+    env_file: .env.production
     environment:
       DOCKER: "1"
     volumes:
