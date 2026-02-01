@@ -1,16 +1,16 @@
 services:
   # In prod, don't expose DB directly to the internet
   db:
-    ports: null
+    ports: []
 
   # Don't expose Redis either
   redis:
-    ports: null
+    ports: []
 
   # Backend should only be reachable internally by Caddy
   backend:
     env_file: .env.production
-    ports: null
+    ports: []
     volumes:
       - ./backend/data:/app/backend/data:ro
 
