@@ -1,5 +1,6 @@
 // src/pages/Home/LandingPage.tsx
 import { styles } from "./HomePage.styles";
+import { Link } from "react-router-dom";
 
 export default function LandingPage() {
   return (
@@ -13,9 +14,9 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-wrap gap-2" style={styles.buttons}>
-            <a
+            <Link
               className="btn btn-primary btn-lg"
-              href="/WildfireMap"
+              to="/wildfiremap"
               style={styles.mapBtn}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor =
@@ -27,23 +28,23 @@ export default function LandingPage() {
               }
             >
               View Map
-            </a>
+            </Link>
 
-            <a
+            <Link
               className="btn btn-primary btn-lg"
-              href="/about"
-              style={styles.aboutBtn}
+              to="/about"
+              style={styles.mapBtn}
               onMouseEnter={(e) =>
                 (e.currentTarget.style.backgroundColor =
                   styles.btnHover.backgroundColor!)
               }
               onMouseLeave={(e) =>
                 (e.currentTarget.style.backgroundColor =
-                  styles.aboutBtn.backgroundColor!)
+                  styles.mapBtn.backgroundColor!)
               }
             >
               About
-            </a>
+            </Link>
           </div>
         </div>
 
