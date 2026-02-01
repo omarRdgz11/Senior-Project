@@ -1,16 +1,16 @@
 services:
   # In prod, don't expose DB directly to the internet
   db:
-    ports: []
+    ports: null
 
   # Don't expose Redis either
   redis:
-    ports: []
+    ports: null
 
   # Backend should only be reachable internally by Caddy
   backend:
     env_file: .env.production
-    ports: []
+    ports: null
 
   # Celery worker - use production environment
   celery-worker:
