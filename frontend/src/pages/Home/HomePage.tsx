@@ -1,4 +1,4 @@
-// src/pages/Home/LandingPage.tsx
+// src/pages/Home/HomePage.tsx
 import { styles } from "./HomePage.styles";
 import { Link } from "react-router-dom";
 
