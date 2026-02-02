@@ -71,11 +71,11 @@ export default function AppShell() {
           </Link>
 
           <Link
-            to="/modeltest"
+            to="/dashboardtest"
             style={{
               ...navbarStyles.link,
               color:
-                location.pathname === "/modeltest"
+                location.pathname === "/dashboardtest"
                   ? navbarStyles.linkHover.color
                   : colors.cream,
             }}
@@ -84,12 +84,12 @@ export default function AppShell() {
             }
             onMouseLeave={(e) =>
               (e.currentTarget.style.color =
-                location.pathname === "/modeltest"
+                location.pathname === "/dashboardtest"
                   ? navbarStyles.linkHover.color!
                   : colors.cream)
             }
           >
-            API Test
+            Dashboard
           </Link>
         </div>
       </nav>
