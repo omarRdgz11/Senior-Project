@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <HomePage /> },            // "/"
-      { path: "WildfireMap", element: <WildfireMapPage /> },         // /WildfireMap
+      { path: "wildfiremap", element: <WildfireMapPage /> },         // /WildfireMap
       { path: "about", element: <AboutPage /> },         // "/about"
       { path: "TestRawDetections", element: <TestRawDetections />},
 

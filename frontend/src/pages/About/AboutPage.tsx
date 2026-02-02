@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { styles } from "./AboutPage.styles"
 
 const people = [
-  { name: "Analee", role: "Developer", path: "/about/people/analee"},
+  { name: "Analee", role: "Developer", path: "/about/people/analee", imgPath: "/images/about-me/profile-pictures/AnaleeProfilePic.JPG" },
   { name: "Linh", role: "Developer", path: "/about/people/linh", imgPath: "/images/about-me/profile-pictures/linhProfilePicture.JPG" },
   { name: "Omar", role: "Developer", path: "/about/people/omar", imgPath: "/images/about-me/profile-pictures/omarProfilePicture.jpg" },
   
