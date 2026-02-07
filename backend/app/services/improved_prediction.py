@@ -73,14 +73,16 @@ def predict_daily_fire_risk(target_date: Date):
         return {
             "date": target_date.isoformat(),
             "available": False,
-            "reason": "No history rows available (missing weather/fire daily data).",
-            "features_used": None,
+            "reason": "No history rows available (missing daily fire/weather data).",
+            "features_used": {},
             "models": {
-                "champion": None,
-                "details": None,
+                "champion": {
+                    "name": None,
+                    "risk": None,
+                    "label": "unavailable",
+                }
             },
         }
-
 
     feature_row = get_latest_features_for_prediction(history_df)
     
