@@ -65,16 +65,25 @@ def build_daily_history(target_date: Date) -> pd.DataFrame:
     history_df["fire_count"] = history_df["fire_count"].fillna(0).astype(int)
     return history_df
 def predict_daily_fire_risk(target_date: Date):
-    """
-    High-level service: given a date, return model outputs + feature row.
-    """
+    
     history_df = build_daily_history(target_date)
-    # Produce engineered features & extract last day as dict
+
+    # ✅ Guard: if no history, return a safe “not available” payload
+    if history_df is None or history_df.empty:
+        return {
+            "date": target_date.isoformat(),
+            "available": False,
+            "reason": "No history rows available (missing weather/fire daily data).",
+            "features_used": None,
+            "models": None,
+        }
+
     feature_row = get_latest_features_for_prediction(history_df)
-    # Run both models
+    
     result = predict_fire_risk(feature_row)
     return {
         "date": target_date.isoformat(),
+        "available": True,
         "features_used": feature_row,
         "models": result,
     }
