@@ -75,8 +75,12 @@ def predict_daily_fire_risk(target_date: Date):
             "available": False,
             "reason": "No history rows available (missing weather/fire daily data).",
             "features_used": None,
-            "models": None,
+            "models": {
+                "champion": None,
+                "details": None,
+            },
         }
+
 
     feature_row = get_latest_features_for_prediction(history_df)
     
