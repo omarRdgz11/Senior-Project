@@ -2,8 +2,13 @@
 # Production deployment on droplet
 set -e
 
+export COMPOSE_PROJECT_NAME=fire-prod
+
 echo "=== Pulling latest code ==="
 git pull origin production
+
+echo "=== Stopping old containers ==="
+docker compose -f docker-compose.yml -f docker-compose.prod.yml down --remove-orphans
 
 echo "=== Building frontend ==="
 cd frontend
@@ -15,13 +20,10 @@ echo "=== Verifying frontend/dist exists ==="
 ls -lh frontend/dist/index.html
 
 echo "=== Building backend image ==="
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml build backend
-
-echo "=== Stopping old containers ==="
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml down
+docker compose -f docker-compose.yml -f docker-compose.prod.yml build backend
 
 echo "=== Starting production stack ==="
-docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --remove-orphans
 
 echo "=== Waiting for services to start ==="
 sleep 20

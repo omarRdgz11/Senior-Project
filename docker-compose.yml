@@ -73,7 +73,6 @@
 services:
   db:
     image: postgis/postgis:16-3.4
-    container_name: fire-db
     restart: unless-stopped
     # ports: []  # Use docker-compose.dev.yml to expose locally
     environment:
@@ -91,7 +90,6 @@ services:
 
   adminer:
     image: adminer:latest
-    container_name: fire-adminer
     restart: unless-stopped
     depends_on:
       - db
@@ -103,7 +101,6 @@ services:
   # Redis broker/result backend for Celery
   redis:
     image: redis:7-alpine
-    container_name: fire-redis
     restart: unless-stopped
     # ports: []  # Use docker-compose.dev.yml to expose locally
 
@@ -111,7 +108,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: fire-backend
     restart: unless-stopped
     env_file: .env
     environment:
@@ -131,7 +127,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: fire-celery-worker
     restart: unless-stopped
     env_file: .env
     environment:
@@ -153,7 +148,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: fire-celery-beat
     restart: unless-stopped
     env_file: .env
     environment:
@@ -171,7 +165,6 @@ services:
 
   frontend:
     image: node:20-alpine
-    container_name: fire-frontend
     working_dir: /usr/src/app
     environment:
       DOCKER: "1"
