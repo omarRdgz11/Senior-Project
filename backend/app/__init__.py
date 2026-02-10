@@ -12,8 +12,8 @@ def create_app():
     # Allow dev (localhost) and production (windssight.com) origins
     cors_origins = [
         "http://localhost:5173",      # Local dev
-        "https://windssight.com",     # Production
-        "https://www.windssight.com", # Production www
+        "https://wild-sight.com ",     # Production
+        "https://www.wild-sight.com ", # Production www
     ]
     CORS(app, resources={r"/api/*": {"origins": cors_origins}})
 

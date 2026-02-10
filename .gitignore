@@ -15,3 +15,5 @@ __pycache__/
 *.pid
 .env
 docker-data/
+.env.production
+.env.local
