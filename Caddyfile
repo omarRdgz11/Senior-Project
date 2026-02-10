@@ -1,4 +1,4 @@
-windssight.com, www.windssight.com {
+wild-sight.com , www.wild-sight.com  {
         encode gzip
 
         @api path /api/*
