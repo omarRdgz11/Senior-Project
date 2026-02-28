@@ -18,6 +18,8 @@ services:
       - "5005:5005"
     # Override to use Flask dev server
     command: ["flask", "run", "--debug"]
+    environment:
+      - ORS_API_KEY=${ORS_API_KEY}
 
   frontend:
     ports:
