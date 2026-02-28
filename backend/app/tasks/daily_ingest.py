@@ -11,11 +11,16 @@ from sqlalchemy import func
 
 from app import create_app
 from app.extensions import db
+from app.Models.Region import Region
 from app.Models.Fire.travis_fires_daily import TravisFiresDaily
+from app.Models.Fire.fires_daily import FiresDaily
 from app.Models.Weather.OpenMeteo_weather import OpenMeteoWeather
+from app.Models.Weather.weather_daily_regional import WeatherDailyRegional
 from app.services.data_fetchers import (
     fetch_open_meteo_range,
     fetch_travis_fires_daily_range,
+    fetch_open_meteo_range_for_region,
+    fetch_fires_daily_range_for_region,
 )
 
 
@@ -135,15 +140,152 @@ def update_travis_fires_daily() -> None:
     db.session.commit()
 
 
+def _get_missing_range_for_weather_regional(region_id: int) -> Optional[Tuple[date, date]]:
+    """Return (start, end) date for which we need to backfill WeatherDailyRegional for a region."""
+    last_date: Optional[date] = db.session.query(
+        func.max(WeatherDailyRegional.date)
+    ).filter(WeatherDailyRegional.region_id == region_id).scalar()
+
+    if last_date is None:
+        start = _parse_data_start_date()
+    else:
+        start = last_date + timedelta(days=1)
+
+    target = date.today() - timedelta(days=1)
+    if start > target:
+        return None
+
+    return start, target
+
+
+def _get_missing_range_for_fires_daily(region_id: int) -> Optional[Tuple[date, date]]:
+    """Return (start, end) date for which we need to backfill FiresDaily for a region."""
+    last_date: Optional[date] = db.session.query(
+        func.max(FiresDaily.acq_date)
+    ).filter(FiresDaily.region_id == region_id).scalar()
+
+    if last_date is None:
+        start = _parse_data_start_date()
+    else:
+        start = last_date + timedelta(days=1)
+
+    target = date.today() - timedelta(days=1)
+    if start > target:
+        return None
+
+    return start, target
+
+
+def update_weather_for_region(region: Region) -> None:
+    """Fill in missing rows in weather_daily_regional for a specific region."""
+    missing_range = _get_missing_range_for_weather_regional(region.id)
+    if not missing_range:
+        return
+
+    start, end = missing_range
+    df = fetch_open_meteo_range_for_region(region, start, end)
+
+    if df.empty:
+        return
+
+    existing_dates = {
+        d
+        for (d,) in db.session.query(WeatherDailyRegional.date)
+        .filter(
+            WeatherDailyRegional.region_id == region.id,
+            WeatherDailyRegional.date.between(start, end),
+        )
+        .all()
+    }
+
+    rows_to_insert = df[~df["date"].isin(existing_dates)]
+
+    for row in rows_to_insert.itertuples(index=False):
+        record = WeatherDailyRegional(
+            region_id=region.id,
+            date=row.date,
+            tempmax=float(row.tempmax) if row.tempmax is not None else None,
+            tempmin=float(row.tempmin) if row.tempmin is not None else None,
+            humidity=float(row.humidity) if row.humidity is not None else None,
+            windspeed=float(row.windspeed) if row.windspeed is not None else None,
+            precip=float(row.precip) if row.precip is not None else None,
+        )
+        db.session.add(record)
+
+    db.session.commit()
+
+
+def update_fires_for_region(region: Region) -> None:
+    """Fill in missing rows in fires_daily for a specific region."""
+    missing_range = _get_missing_range_for_fires_daily(region.id)
+    if not missing_range:
+        return
+
+    start, end = missing_range
+    df = fetch_fires_daily_range_for_region(region, start, end)
+
+    if df.empty:
+        return
+
+    existing_dates = {
+        d
+        for (d,) in db.session.query(FiresDaily.acq_date)
+        .filter(
+            FiresDaily.region_id == region.id,
+            FiresDaily.acq_date.between(start, end),
+        )
+        .all()
+    }
+
+    rows_to_insert = df[~df["acq_date"].isin(existing_dates)]
+
+    for row in rows_to_insert.itertuples(index=False):
+        record = FiresDaily(
+            region_id=region.id,
+            acq_date=row.acq_date,
+            fire_count=int(row.fire_count),
+            avg_brightness=float(row.avg_brightness)
+            if row.avg_brightness is not None
+            else None,
+            avg_confidence=float(row.avg_confidence)
+            if row.avg_confidence is not None
+            else None,
+            avg_frp=float(row.avg_frp) if row.avg_frp is not None else None,
+            label=int(row.label) if row.label is not None else None,
+        )
+        db.session.add(record)
+
+    db.session.commit()
+
+
+def update_all_regions() -> None:
+    """Update weather and fires data for all regions."""
+    regions = Region.query.all()
+
+    for region in regions:
+        print(f"Updating region: {region.slug}")
+        try:
+            update_weather_for_region(region)
+            update_fires_for_region(region)
+        except Exception as e:
+            print(f"Error updating region {region.slug}: {e}")
+            # Continue with other regions even if one fails
+            db.session.rollback()
+
+
 @shared_task
 def run_daily_ingest() -> None:
     """
     Celery task entry point.
 
     Called once per day by Celery Beat. Opens an app context,
-    updates weather + fires, and commits.
+    updates weather + fires for all regions, and commits.
     """
     app = create_app()
     with app.app_context():
+        # Update legacy tables (for backward compatibility with Austin/Travis)
         update_openmeteo_weather()
         update_travis_fires_daily()
+
+        # Update new multi-region tables
+        update_all_regions()

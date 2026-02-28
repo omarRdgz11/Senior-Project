@@ -2,6 +2,7 @@
 node_modules/
 pnpm-lock.yaml
 npm-debug.log*
+celerybeat-schedule
 
 # Python
 __pycache__/

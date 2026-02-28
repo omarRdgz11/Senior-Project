@@ -21,6 +21,7 @@ export type DailyFireRiskModels = {
 // Full response from /api/improved/daily
 export type DailyFireRiskResponse = {
   date: string; // "2024-06-15"
+  region?: string; // Region slug (optional, defaults to austin)
 
   // All engineered features for that day (we keep this generic)
   features_used: Record<string, number | string | boolean | null>;
@@ -69,19 +70,39 @@ async function fetchJSON(url: string, init?: RequestInit) {
 
 /**
  * Wraps:
- *   GET /api/improved/daily?date=YYYY-MM-DD
+ *   GET /api/improved/daily?date=YYYY-MM-DD&region=<slug>
  *
  * If `isoDate` is omitted, backend can default to today.
+ * If `region` is omitted, backend defaults to 'austin'.
  */
 export async function fetchDailyFireRisk(
-  isoDate?: string
+  isoDate?: string,
+  region?: string
 ): Promise<DailyFireRiskResponse> {
   const params = new URLSearchParams();
   if (isoDate) params.set("date", isoDate);
+  if (region) params.set("region", region);
 
   const url =
     `${API_BASE}/api/improved/daily` +
     (params.toString() ? `?${params.toString()}` : "");
 
+  return fetchJSON(url);
+}
+
+/* ========== Firms (Past Fires) helpers ========== */
+
+export type FirmsMaxDateResponse = {
+  max_date: string | null;
+};
+
+/**
+ * GET /api/firms/max_date
+ *
+ * Returns:
+ *   { max_date: "YYYY-MM-DD" | null }
+ */
+export async function fetchFirmsMaxDate(): Promise<FirmsMaxDateResponse> {
+  const url = `${API_BASE}/api/firms/max_date`;
   return fetchJSON(url);
 }
