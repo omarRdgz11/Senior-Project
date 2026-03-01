@@ -9,7 +9,7 @@ services:
 
   # Backend should only be reachable internally by Caddy
   backend:
-    env_file: .production.env
+    env_file: .env.production
     ports: []
     volumes:
       - ./backend/data:/app/backend/data:ro
