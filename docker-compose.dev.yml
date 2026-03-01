@@ -22,6 +22,20 @@ services:
     # Override to use Flask dev server (force correct app package)
     command: ["flask", "--app", "app:create_app", "run", "--host", "0.0.0.0", "--port", "5005", "--debug"]
 
+  celery-worker:
+    volumes:
+      - ./backend:/app/backend
+    working_dir: /app/backend
+    environment:
+      - PYTHONPATH=/app/backend
+
+  celery-beat:
+    volumes:
+      - ./backend:/app/backend
+    working_dir: /app/backend
+    environment:
+      - PYTHONPATH=/app/backend
+
   frontend:
     ports:
       - "5173:5173"

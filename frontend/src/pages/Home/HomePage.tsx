@@ -30,6 +30,24 @@ export default function LandingPage() {
               View Map
             </Link>
 
+            
+            <Link
+            //add link on homepage for evacuation routes page
+            className="btn btn-primary btn-lg"
+            to="/evacuation"  
+            style={styles.mapBtn}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                styles.btnHover.backgroundColor!)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor =
+                styles.mapBtn.backgroundColor!)
+            }
+          >
+            Evacuation
+            </Link>
+
             <Link
               className="btn btn-primary btn-lg"
               to="/about"

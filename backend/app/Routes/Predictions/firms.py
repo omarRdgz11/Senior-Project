@@ -61,3 +61,16 @@ def list_fires():
         for r in rows
     ]
     return jsonify({"count": len(data), "items": data})
+
+@firms_bp.route("/max_date", methods=["GET"])
+def max_date():
+    """
+    GET /api/firms/max_date
+    Returns the latest available acq_date in firms_viirs.
+    """
+    max_date = db.session.query(db.func.max(FirmsVIIRS.acq_date)).scalar()
+
+    if not max_date:
+        return jsonify({"max_date": None})
+
+    return jsonify({"max_date": max_date.isoformat()})

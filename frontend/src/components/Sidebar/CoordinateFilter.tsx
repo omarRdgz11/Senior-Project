@@ -5,10 +5,12 @@ interface CoordinateFilterProps {
   filters: any;
   setFilters: React.Dispatch<React.SetStateAction<any>>;
 }
-const LONG_MIN = -98.0998;
-const LONG_MAX = -97.50;
-const LAT_MIN = 30.00;
-const LAT_MAX = 30.60;
+// Wide enough to cover all supported Texas regions
+// (Austin, Dallas, Houston, San Antonio) plus generous margin.
+const LONG_MIN = -107;
+const LONG_MAX = -93;
+const LAT_MIN = 25;
+const LAT_MAX = 37;
 
 const CoordinateFilter: React.FC<CoordinateFilterProps> = ({ filters, setFilters }) => {
   const coordinates = filters.coordinates || {

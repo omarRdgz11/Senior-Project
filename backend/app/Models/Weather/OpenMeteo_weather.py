@@ -1,3 +1,4 @@
+# backend/app/Models/Weather/OpenMeteo_weather.py
 from app.extensions import db
 
 class OpenMeteoWeather(db.Model):

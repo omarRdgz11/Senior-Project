@@ -14,6 +14,8 @@ import DashboardTest from "../pages/Dashboard/DashboardTest";
 import DashboardRouteTest from "../pages/TestPages/DashboardRouteTest";
 import DashboardTestTwo from "../pages/DashboardTestTwo";
 import NotificationPage from "../pages/Notification/NotificationPage";
+import EvacuationRoute from "../pages/EvacuationRoute/EvacuationRoute";
+
 // Add more imports as new teammates create files
 
 const NotFound = () => (
@@ -43,6 +45,8 @@ export const router = createBrowserRouter([
       { path: "dashboardroutetest", element: <DashboardRouteTest /> },
 
       { path: "dashboardTestTwo", element: <DashboardTestTwo />},
+      //evacuation route page
+      { path: "evacuation", element: <EvacuationRoute /> },
 
       { path: "*", element: <NotFound /> },
     ],
