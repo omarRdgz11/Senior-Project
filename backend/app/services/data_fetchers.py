@@ -107,18 +107,6 @@ def fetch_open_meteo_range(
 FIRMS_AREA_BASE_URL = "https://firms.modaps.eosdis.nasa.gov/usfs/api/area/csv"
 
 
-def _firms_area_url_for_date(
-    current_date: date, bbox: str, source: str, map_key: str
-) -> str:
-    """
-    Build an area API URL for a single date and day_range=1.
-
-    Docs pattern: /usfs/api/area/csv/[MAP_KEY]/[SOURCE]/[AREA_COORDINATES]/[DAY_RANGE]/[DATE]
-    where DATE is the start date of the range. :contentReference[oaicite:2]{index=2}
-    """
-    return f"{FIRMS_AREA_BASE_URL}/{map_key}/{source}/{bbox}/1/{current_date.isoformat()}"
-
-
 def fetch_travis_fires_daily_range(
     start: date,
     end: date,
@@ -127,12 +115,13 @@ def fetch_travis_fires_daily_range(
     map_key: Optional[str] = None,
 ) -> pd.DataFrame:
     """
-    Fetch FIRMS fire detections for each day in [start, end] and aggregate to daily
-    TravisFiresDaily format:
+    Fetch FIRMS fire detections for [start, end] in batched windows and aggregate to daily.
 
-      acq_date, fire_count, avg_brightness, avg_confidence, avg_frp, label
+    Uses FIRMS USFS Area API with DAY_RANGE windows (max 5 days per request) to minimize API calls.
+    URL pattern: /usfs/api/area/csv/[MAP_KEY]/[SOURCE]/[BBOX]/[DAY_RANGE]/[DATE]
 
-    label: simple binary 1 if fire_count > 0, else 0.
+    Returns DataFrame with: acq_date, fire_count, avg_brightness, avg_confidence, avg_frp, label
+    All dates in range will have rows (fire_count=0 if no detections).
     """
     if map_key is None:
         map_key = os.getenv("FIRMS_MAP_KEY")
@@ -142,93 +131,100 @@ def fetch_travis_fires_daily_range(
     if bbox is None:
         bbox = os.getenv("TRAVIS_BBOX", "-98.20,30.00,-97.20,30.70")
     if source is None:
-        # VIIRS SNPP NRT is a good default, but you can change to MODIS_SP etc.
         source = os.getenv("FIRMS_SOURCE", "VIIRS_SNPP_NRT")
 
-    all_days = []
+    # Dictionary to store results by date
+    daily_results = {}
 
-    day = start
-    while day <= end:
-        url = _firms_area_url_for_date(day, bbox, source, map_key)
-        resp = requests.get(url, timeout=30)
+    # Batch requests in windows of up to 5 days
+    MAX_WINDOW = 5
+    window_start = start
 
-        if resp.status_code == 204 or not resp.text.strip():
-            # No detections this day
-            all_days.append(
-                {
-                    "acq_date": day,
-                    "fire_count": 0,
-                    "avg_brightness": None,
-                    "avg_confidence": None,
-                    "avg_frp": None,
-                    "label": 0,
-                }
-            )
-            day += timedelta(days=1)
-            continue
+    while window_start <= end:
+        # Calculate window size (max 5 days or remaining days)
+        days_remaining = (end - window_start).days + 1
+        window_size = min(MAX_WINDOW, days_remaining)
+        window_end = window_start + timedelta(days=window_size - 1)
 
-        resp.raise_for_status()
+        # Build URL for this window
+        url = f"{FIRMS_AREA_BASE_URL}/{map_key}/{source}/{bbox}/{window_size}/{window_start.isoformat()}"
 
-        # Parse CSV into DataFrame
-        df = pd.read_csv(io.StringIO(resp.text))
+        try:
+            resp = requests.get(url, timeout=30)
 
-        if df.empty:
-            all_days.append(
-                {
-                    "acq_date": day,
-                    "fire_count": 0,
-                    "avg_brightness": None,
-                    "avg_confidence": None,
-                    "avg_frp": None,
-                    "label": 0,
-                }
-            )
-            day += timedelta(days=1)
-            continue
-        
-        # --- CLEANUP: make confidence numeric, ignore text codes ---
-        if "confidence" in df.columns:
-            df["confidence"] = pd.to_numeric(df["confidence"], errors="coerce")
+            if resp.status_code == 204 or not resp.text.strip():
+                # No detections in this window - mark all days as zero
+                current_day = window_start
+                while current_day <= window_end:
+                    daily_results[current_day] = {
+                        "acq_date": current_day,
+                        "fire_count": 0,
+                        "avg_brightness": None,
+                        "avg_confidence": None,
+                        "avg_frp": None,
+                        "label": 0,
+                    }
+                    current_day += timedelta(days=1)
+                window_start = window_end + timedelta(days=1)
+                continue
 
-        # Standard FIRMS columns differ slightly by sensor. Common patterns:
-        # - brightness or bright_ti4
-        # - confidence
-        # - frp
-        # - acq_date
-        if "acq_date" not in df.columns:
-            # Some sensors may return 'acq_date' anyway; if not, try 'daynight' etc.
-            # Adjust here if needed depending on your notebook.
-            raise RuntimeError(
-                f"FIRMS response missing 'acq_date' column for date={day}"
-            )
+            resp.raise_for_status()
 
-        # Normalize brightness column
-        if "brightness" in df.columns:
-            brightness_col = "brightness"
-        elif "bright_ti4" in df.columns:
-            brightness_col = "bright_ti4"
-        else:
+            # Parse CSV into DataFrame
+            df = pd.read_csv(io.StringIO(resp.text))
+
+            if df.empty:
+                # No detections - mark all days in window as zero
+                current_day = window_start
+                while current_day <= window_end:
+                    daily_results[current_day] = {
+                        "acq_date": current_day,
+                        "fire_count": 0,
+                        "avg_brightness": None,
+                        "avg_confidence": None,
+                        "avg_frp": None,
+                        "label": 0,
+                    }
+                    current_day += timedelta(days=1)
+                window_start = window_end + timedelta(days=1)
+                continue
+
+            # --- CLEANUP: make confidence numeric, ignore text codes ---
+            if "confidence" in df.columns:
+                df["confidence"] = pd.to_numeric(df["confidence"], errors="coerce")
+
+            # Ensure acq_date exists
+            if "acq_date" not in df.columns:
+                raise RuntimeError(
+                    f"FIRMS response missing 'acq_date' column for window {window_start}-{window_end}"
+                )
+
+            # Normalize brightness column
             brightness_col = None
+            if "brightness" in df.columns:
+                brightness_col = "brightness"
+            elif "bright_ti4" in df.columns:
+                brightness_col = "bright_ti4"
 
-        # Ensure date type
-        df["acq_date"] = pd.to_datetime(df["acq_date"]).dt.date
+            # Parse dates
+            df["acq_date"] = pd.to_datetime(df["acq_date"]).dt.date
 
-        # Group by date just in case the endpoint returns a multi-day range
-        grouped = df.groupby("acq_date")
+            # Group by date and aggregate
+            grouped = df.groupby("acq_date")
 
-        for this_date, group in grouped:
-            fire_count = len(group)
+            for this_date, group in grouped:
+                fire_count = len(group)
+                avg_brightness = (
+                    group[brightness_col].mean()
+                    if brightness_col and brightness_col in group.columns
+                    else None
+                )
+                avg_confidence = (
+                    group["confidence"].mean() if "confidence" in group.columns else None
+                )
+                avg_frp = group["frp"].mean() if "frp" in group.columns else None
 
-            avg_brightness = (
-                group[brightness_col].mean() if brightness_col and brightness_col in group else None
-            )
-            avg_confidence = (
-                group["confidence"].mean() if "confidence" in group else None
-            )
-            avg_frp = group["frp"].mean() if "frp" in group else None
-
-            all_days.append(
-                {
+                daily_results[this_date] = {
                     "acq_date": this_date,
                     "fire_count": int(fire_count),
                     "avg_brightness": float(avg_brightness)
@@ -240,11 +236,42 @@ def fetch_travis_fires_daily_range(
                     "avg_frp": float(avg_frp) if avg_frp is not None else None,
                     "label": 1 if fire_count > 0 else 0,
                 }
-            )
 
-        day += timedelta(days=1)
+            # Fill in any missing days in this window with zeros
+            current_day = window_start
+            while current_day <= window_end:
+                if current_day not in daily_results:
+                    daily_results[current_day] = {
+                        "acq_date": current_day,
+                        "fire_count": 0,
+                        "avg_brightness": None,
+                        "avg_confidence": None,
+                        "avg_frp": None,
+                        "label": 0,
+                    }
+                current_day += timedelta(days=1)
 
-    if not all_days:
+        except Exception as e:
+            # On error, log and mark days as zero to continue
+            print(f"Error fetching FIRMS data for window {window_start}-{window_end}: {e}")
+            current_day = window_start
+            while current_day <= window_end:
+                if current_day not in daily_results:
+                    daily_results[current_day] = {
+                        "acq_date": current_day,
+                        "fire_count": 0,
+                        "avg_brightness": None,
+                        "avg_confidence": None,
+                        "avg_frp": None,
+                        "label": 0,
+                    }
+                current_day += timedelta(days=1)
+
+        # Move to next window
+        window_start = window_end + timedelta(days=1)
+
+    # Convert to DataFrame and sort by date
+    if not daily_results:
         return pd.DataFrame(
             columns=[
                 "acq_date",
@@ -256,4 +283,75 @@ def fetch_travis_fires_daily_range(
             ]
         )
 
-    return pd.DataFrame(all_days)
+    result_df = pd.DataFrame(list(daily_results.values()))
+    result_df = result_df.sort_values("acq_date").reset_index(drop=True)
+
+    return result_df
+
+
+# -----------------------------
+# Multi-region functions
+# -----------------------------
+
+
+def fetch_open_meteo_range_for_region(
+    region,
+    start: date,
+    end: date,
+    timezone: Optional[str] = None,
+) -> pd.DataFrame:
+    """
+    Fetch daily weather from Open-Meteo for a specific region.
+
+    Args:
+        region: Region model instance with center_lat, center_lon
+        start: start date (inclusive)
+        end: end date (inclusive)
+        timezone: optional timezone string (default: America/Chicago)
+
+    Returns:
+        DataFrame with columns: ['date', 'tempmax', 'tempmin', 'humidity', 'windspeed', 'precip']
+    """
+    df = fetch_open_meteo_range(
+        start=start,
+        end=end,
+        lat=region.center_lat,
+        lon=region.center_lon,
+        timezone=timezone,
+    )
+
+    # Rename 'datetime' to 'date' for consistency with new table schema
+    if "datetime" in df.columns:
+        df = df.rename(columns={"datetime": "date"})
+
+    return df
+
+
+def fetch_fires_daily_range_for_region(
+    region,
+    start: date,
+    end: date,
+    source: Optional[str] = None,
+    map_key: Optional[str] = None,
+) -> pd.DataFrame:
+    """
+    Fetch FIRMS fire detections for a specific region and aggregate to daily format.
+
+    Args:
+        region: Region model instance with bbox_w, bbox_s, bbox_e, bbox_n
+        start: start date (inclusive)
+        end: end date (inclusive)
+        source: FIRMS source (e.g., VIIRS_SNPP_NRT)
+        map_key: FIRMS API key
+
+    Returns:
+        DataFrame with columns: ['acq_date', 'fire_count', 'avg_brightness', 'avg_confidence', 'avg_frp', 'label']
+    """
+    bbox = region.bbox_string()
+    return fetch_travis_fires_daily_range(
+        start=start,
+        end=end,
+        bbox=bbox,
+        source=source,
+        map_key=map_key,
+    )

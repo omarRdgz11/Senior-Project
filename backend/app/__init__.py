@@ -34,7 +34,7 @@ def create_app():
 
     # AUTO-CREATE TABLES (development only - use migrations in production)
     # In production, run: flask db upgrade
-    if os.getenv("FLASK_ENV") != "production":
+    if os.getenv("AUTO_CREATE_TABLES") == "1":
         with app.app_context():
             db.create_all()
 

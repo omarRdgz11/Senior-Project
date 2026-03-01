@@ -1,3 +1,13 @@
+# backend/app/tasks/firms_fetch.py
+#
+# ⚠️  DEPRECATED: This task is for ingesting raw FIRMS detections into the RawDetection table (map points).
+# As of 2026-02-24, map points are ingested manually from FIRMS archive CSVs.
+# Prediction features (daily aggregates) are now handled by app/tasks/daily_ingest.py with multi-region support.
+#
+# This file remains for reference but is NOT scheduled in Celery Beat.
+# If you need to re-enable map point ingestion, update the beat_schedule in celery_app.py.
+#
+
 import os
 import requests
 from datetime import datetime, timezone
@@ -22,11 +32,10 @@ def _parse_bbox(bbox_str):
 
 def _firms_url(source, bbox, start_iso):
     # Build a FIRMS API URL that limits by bbox and (optionally) start time.
-    # Consult FIRMS docs for exact params for the chosen endpoint.
-    # Example pattern (pseudo): /api/country/csv/{source}/{MAP_KEY}/{bbox}?start={start_iso}
-    # If your selected endpoint is different, adjust here accordingly.
+    # Note: This uses an older API pattern with ?start= watermark.
+    # For new implementations, prefer the USFS Area API in data_fetchers.py with day_range windows.
     base = "https://firms.modaps.eosdis.nasa.gov/api/area/csv"
-    map_key = _get_env("MAP_KEY", required=True)
+    map_key = _get_env("FIRMS_MAP_KEY", required=True)
     bbox_str = ",".join(map(str, bbox))
     params = f"{source}/{map_key}/{bbox_str}"
     # If FIRMS endpoint supports time filtering, include `?start=...`

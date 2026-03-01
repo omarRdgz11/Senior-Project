@@ -1,4 +1,4 @@
-# backend/app/Models/firms_viirs.py
+# backend/app/Models/Fire/firms_viirs.py
 from app.extensions import db
 
 class FirmsVIIRS(db.Model):

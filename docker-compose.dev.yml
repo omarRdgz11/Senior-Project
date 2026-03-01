@@ -18,8 +18,20 @@ services:
       - "5005:5005"
     # Override to use Flask dev server
     command: ["flask", "run", "--debug"]
+
+  celery-worker:
+    volumes:
+      - ./backend:/app/backend
+    working_dir: /app/backend
     environment:
-      - ORS_API_KEY=${ORS_API_KEY}
+      - PYTHONPATH=/app/backend
+
+  celery-beat:
+    volumes:
+      - ./backend:/app/backend
+    working_dir: /app/backend
+    environment:
+      - PYTHONPATH=/app/backend
 
   frontend:
     ports:
