@@ -91,6 +91,50 @@ export default function AppShell() {
           >
             Dashboard
           </Link>
+
+          <Link
+            to="/notifications"
+            style={{
+              ...navbarStyles.link,
+              color:
+                location.pathname === "/notifications"
+                  ? navbarStyles.linkHover.color
+                  : colors.cream,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = navbarStyles.linkHover.color!)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color =
+                location.pathname === "/notifications"
+                  ? navbarStyles.linkHover.color!
+                  : colors.cream)
+            }
+          >
+            Notifications
+          </Link>
+
+          <Link
+            to="/evacuation"
+            style={{
+              ...navbarStyles.link,
+              color:
+                location.pathname === "/evacuation"
+                  ? navbarStyles.linkHover.color
+                  : colors.cream,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.color = navbarStyles.linkHover.color!)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.color =
+                location.pathname === "/evacuation"
+                  ? navbarStyles.linkHover.color!
+                  : colors.cream)
+            }
+          >
+            Evacuation Plan
+          </Link>
         </div>
       </nav>
 

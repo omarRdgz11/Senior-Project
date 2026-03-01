@@ -573,11 +573,20 @@ export default function WildfireMapPage() {
                 <br />
                 <strong>Date:</strong> {predictionMarker.date}
                 <br />
-                <strong>Probability:</strong>{" "}
+                {/* <strong>Probability:</strong>{" "}
                 {(predictionMarker.probability * 100).toFixed(1)}%
                 <br />
                 <strong>Threshold:</strong>{" "}
-                {predictionMarker.threshold.toFixed(2)}
+                {predictionMarker.threshold.toFixed(2)} */}
+                const prob =
+                  typeof predictionMarker?.probability === "number"
+                    ? (predictionMarker.probability * 100).toFixed(1)
+                    : "—";
+
+                const thresh =
+                  typeof predictionMarker?.threshold === "number"
+                    ? predictionMarker.threshold.toFixed(2)
+                    : "—";
                 <br />
                 <strong>Risk:</strong>{" "}
                 {predictionMarker.label === 1 ? "⚠️ High" : "✓ Low"}
