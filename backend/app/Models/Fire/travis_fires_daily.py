@@ -1,4 +1,4 @@
-# backend/app/Models/travis_fires_daily.py
+# backend/app/Models/Fire/travis_fires_daily.py
 from app.extensions import db
 
 class TravisFiresDaily(db.Model):

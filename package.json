@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "@aws-sdk/client-sns": "^3.999.0",
+    "@types/pg": "^8.16.0",
+    "@types/styled-components": "^5.1.36",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.19.0",
+    "react": "^19.2.4",
+    "styled-components": "^6.3.11",
+    "twilio": "^5.12.2",
+    "uuid": "^13.0.0"
+  }
+}

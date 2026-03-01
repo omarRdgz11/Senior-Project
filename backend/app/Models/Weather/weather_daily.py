@@ -1,3 +1,4 @@
+# backend/app/Models/Weather/weather_daily.py
 from app.extensions import db
 
 class WeatherDaily(db.Model):

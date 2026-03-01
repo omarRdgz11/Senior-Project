@@ -13,12 +13,18 @@ def make_celery(flask_app: Flask) -> Celery:
         task_serializer="json",
         accept_content=["json"],
         beat_schedule={
-            # run once daily at 06:15 UTC (adjust as needed)
-            "daily-firms-fetch": {
-                "task": "app.tasks.firms_fetch.daily_fetch_for_travis",
-                "schedule": 24*60*60,   # simple 24h; swap for crontab if preferred
+            # Daily ingestion for multi-region weather and fires (prediction features)
+            "daily-multi-region-ingest": {
+                "task": "app.tasks.daily_ingest.run_daily_ingest",
+                "schedule": 24*60*60,   # 24h interval; swap for crontab if preferred
                 "options": {"queue": "default"},
-            }
+            },
+            # DEPRECATED: Map points ingestion (now done manually from archive CSVs)
+            # "daily-firms-fetch": {
+            #     "task": "app.tasks.firms_fetch.daily_fetch_for_travis",
+            #     "schedule": 24*60*60,
+            #     "options": {"queue": "default"},
+            # }
         },
     )
 

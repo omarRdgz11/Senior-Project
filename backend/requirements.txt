@@ -22,3 +22,5 @@ numpy==1.26.4            # Required by both sklearn and pandas
 catboost==1.2.5
 
 gunicorn==21.2.0
+
+twilio==9.0.0
