@@ -13,6 +13,7 @@ import ModelTest from "../pages/TestPages/ModelTest";
 import DashboardTest from "../pages/Dashboard/DashboardTest";
 import DashboardRouteTest from "../pages/TestPages/DashboardRouteTest";
 import DashboardTestTwo from "../pages/DashboardTestTwo";
+import NotificationPage from "../pages/Notification/NotificationPage";
 import EvacuationRoute from "../pages/EvacuationRoute/EvacuationRoute";
 
 // Add more imports as new teammates create files
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: "wildfiremap", element: <WildfireMapPage /> },         // /WildfireMap
       { path: "about", element: <AboutPage /> },         // "/about"
       { path: "TestRawDetections", element: <TestRawDetections />},
+      { path: "notifications", element: <NotificationPage />},
 
       // People profiles (one route per file under About/People)
       { path: "about/people/omar", element: <Omar /> },
