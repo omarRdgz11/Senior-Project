@@ -181,6 +181,7 @@ def update_weather_for_region(region: Region) -> None:
     missing_range = _get_missing_range_for_weather_regional(region.id)
     if not missing_range:
         return
+        
 
     start, end = missing_range
     df = fetch_open_meteo_range_for_region(region, start, end)
