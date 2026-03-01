@@ -7,6 +7,7 @@ from .Predictions.firms import firms_bp
 from .Predictions.grid import grid_bp
 from .Predictions.predict_improved import bp_predict_improved
 from .Dashboard.overview import bp_dashboard
+from .Notifications.notifications import notifications_bp
 
 def register_routes(app):
     app.register_blueprint(health_bp)
@@ -18,4 +19,4 @@ def register_routes(app):
     app.register_blueprint(grid_bp)
     app.register_blueprint(bp_predict_improved)
     app.register_blueprint(bp_dashboard)
-    
+    app.register_blueprint(notifications_bp)

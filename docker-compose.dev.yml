@@ -16,8 +16,11 @@ services:
       - ./backend:/app/backend
     ports:
       - "5005:5005"
-    # Override to use Flask dev server
-    command: ["flask", "run", "--debug"]
+    working_dir: /app/backend
+    environment:
+      - PYTHONPATH=/app/backend
+    # Override to use Flask dev server (force correct app package)
+    command: ["flask", "--app", "app:create_app", "run", "--host", "0.0.0.0", "--port", "5005", "--debug"]
 
   frontend:
     ports:
