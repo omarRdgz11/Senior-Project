@@ -1,82 +1,92 @@
 # backend/app/Routes/Dashboard/overview.py
-from flask import Blueprint, request, jsonify
+from flask import request, jsonify
 from datetime import datetime, timedelta
-from app.Models.Fire.travis_fires_daily import TravisFiresDaily 
+from app.Models.Region import Region
+from app.Models.Fire.fires_daily import FiresDaily
+from app.Models.Weather.weather_daily_regional import WeatherDailyRegional
+# Legacy Austin-only tables kept as fallback
+from app.Models.Fire.travis_fires_daily import TravisFiresDaily
 from app.Models.Weather.OpenMeteo_weather import OpenMeteoWeather
 from . import bp_dashboard
 
-def _fire_row_to_dict(f: TravisFiresDaily) -> dict:
-    return {
-        "acq_date": f.acq_date.isoformat(),
-        "fire_count": f.fire_count,
-        "avg_brightness": f.avg_brightness,
-        "avg_confidence": f.avg_confidence,
-        "avg_frp": f.avg_frp,
-        "label": f.label,
-    }
 
-def _weather_row_to_dict(w: OpenMeteoWeather) -> dict:
-    return {
-        "datetime": w.datetime.isoformat(),
-        "tempmax": w.tempmax,
-        "tempmin": w.tempmin,
-        "humidity": w.humidity,
-        "windspeed": w.windspeed,
-        "precip": w.precip,
-    }
+def _norm_humidity(h): return 1 - min(max(h, 0), 100) / 100
+def _norm_wind(w): return min(w / 40, 1)
+def _norm_fires(f): return min(f / 40, 1)
+
 
 @bp_dashboard.get("/overview")
 def overview():
     """
-    GET /api/dashboard/overview
+    GET /api/dashboard/overview?date=YYYY-MM-DD[&region=<slug>]
 
-    Query params:
-        - date (required, YYYY-MM-DD)
-            Interpreted as the “current dashboard date”
-            “Last 24h” means (date - 1 day, date]
-
+    If region is provided, uses multi-region tables (fires_daily,
+    weather_daily_regional).  Falls back to the legacy Travis County
+    tables when no region is given or the slug is not found.
     """
     req_date_str = request.args.get("date")
     if not req_date_str:
         return jsonify({"error": "date parameter is required (YYYY-MM-DD)"}), 400
-    
+
     try:
         req_date = datetime.strptime(req_date_str, "%Y-%m-%d").date()
     except ValueError:
         return jsonify({"error": "Invalid date format (YYYY-MM-DD)"}), 400
-    
-    fire_q = TravisFiresDaily.query.filter_by(acq_date=req_date).first()
-    weather_q = OpenMeteoWeather.query.filter_by(datetime=req_date).first()
 
-    # Fires in the last 24h
+    region_slug = request.args.get("region")
     last_24h_date = req_date - timedelta(days=1)
-    last_24h_date_q = TravisFiresDaily.query.filter_by(acq_date=last_24h_date).first()
-    fires_last_24h = last_24h_date_q.fire_count if last_24h_date_q else 0
 
-    humidity = weather_q.humidity if weather_q else 0
-    windspeed = weather_q.windspeed if weather_q else 0
+    region_obj = Region.query.filter_by(slug=region_slug).first() if region_slug else None
 
-    # Risk score - calculated as average of normalized drivers
-    def norm_humidity(h): return 1 - min(max(h, 0), 100) / 100
-    def norm_wind(w): return min(w / 40, 1)
-    def norm_fires(f): return min(f / 40, 1)
+    if region_obj:
+        # ---- Multi-region path ----
+        fire_q = FiresDaily.query.filter_by(region_id=region_obj.id, acq_date=req_date).first()
+        weather_q = WeatherDailyRegional.query.filter_by(region_id=region_obj.id, date=req_date).first()
+        last_24h_q = FiresDaily.query.filter_by(region_id=region_obj.id, acq_date=last_24h_date).first()
+        region_name = region_obj.name
+
+        humidity = weather_q.humidity if weather_q else 0
+        windspeed = weather_q.windspeed if weather_q else 0
+        fires_last_24h = last_24h_q.fire_count if last_24h_q else 0
+
+        weather_dict = {
+            "datetime": weather_q.date.isoformat(),
+            "tempmax": weather_q.tempmax,
+            "tempmin": weather_q.tempmin,
+            "humidity": weather_q.humidity,
+            "windspeed": weather_q.windspeed,
+            "precip": weather_q.precip,
+        } if weather_q else None
+    else:
+        # ---- Legacy Austin fallback ----
+        weather_q = OpenMeteoWeather.query.filter_by(datetime=req_date).first()
+        last_24h_q = TravisFiresDaily.query.filter_by(acq_date=last_24h_date).first()
+        region_name = "Travis County"
+
+        humidity = weather_q.humidity if weather_q else 0
+        windspeed = weather_q.windspeed if weather_q else 0
+        fires_last_24h = last_24h_q.fire_count if last_24h_q else 0
+
+        weather_dict = {
+            "datetime": weather_q.datetime.isoformat(),
+            "tempmax": weather_q.tempmax,
+            "tempmin": weather_q.tempmin,
+            "humidity": weather_q.humidity,
+            "windspeed": weather_q.windspeed,
+            "precip": weather_q.precip,
+        } if weather_q else None
 
     risk_score = (
-        norm_fires(fires_last_24h) +
-        norm_humidity(humidity) +
-        norm_wind(windspeed)
+        _norm_fires(fires_last_24h) +
+        _norm_humidity(humidity) +
+        _norm_wind(windspeed)
     ) / 3
 
-    # Risk label based on score
-    label = (
-        "Low" if risk_score < 0.33 else
-        "Elevated" if risk_score < 0.66 else
-        "High"
-    )
+    label = "Low" if risk_score < 0.33 else "Elevated" if risk_score < 0.66 else "High"
 
     return jsonify({
         "date": req_date.isoformat(),
-        "region": "Travis County",
+        "region": region_name,
         "risk": {
             "score": round(risk_score, 2),
             "label": label,
@@ -84,7 +94,7 @@ def overview():
             "drivers": {
                 "avg_humidity": humidity,
                 "avg_wind": windspeed,
-            }
+            },
         },
-        "weather": _weather_row_to_dict(weather_q) if weather_q else None,
+        "weather": weather_dict,
     }), 200

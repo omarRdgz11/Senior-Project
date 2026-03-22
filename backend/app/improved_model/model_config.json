@@ -34,7 +34,7 @@
       "is_fire_season",
       "consecutive_dry_days"
     ],
-    "threshold": 0.25000000000000006
+    "threshold": 0.20
   },
   "random_forest_shadow": {
     "model_path": "rf_shadow.joblib",
@@ -64,6 +64,6 @@
       "windspeed_30d_avg",
       "precip_30d_sum"
     ],
-    "threshold": 0.25000000000000006
+    "threshold": 0.20
   }
 }
