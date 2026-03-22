@@ -56,6 +56,7 @@ export type FiresSummaryResponse = {
 
 export type WatchlistItem = {
   name: string;
+  slug?: string;
   risk: string;
   hotspots: number;
   windspeed: number;
@@ -94,11 +95,12 @@ const API_BASE = (import.meta.env.VITE_API_BASE ?? "http://localhost:5005").repl
 /* ================== Public API ================== */
 
 /**
- * GET /api/dashboard/overview
+ * GET /api/dashboard/overview?date=YYYY-MM-DD[&region=<slug>]
  */
-export async function fetchDashboardOverview(date: string): Promise<DashboardOverview> {
-  const url = `${API_BASE}/api/dashboard/overview?date=${date}`;
-  return fetchJSON(url);
+export async function fetchDashboardOverview(date: string, region?: string): Promise<DashboardOverview> {
+  const params = new URLSearchParams({ date });
+  if (region) params.set("region", region);
+  return fetchJSON(`${API_BASE}/api/dashboard/overview?${params}`);
 }
 
 /**
@@ -158,10 +160,11 @@ export async function fetchWatchlist(date: string): Promise<WatchlistResponse> {
 }
 
 export async function fetchInsights(
-  start: string, 
-  end: string
+  start: string,
+  end: string,
+  region?: string,
 ): Promise<InsightsResponse> {
   const qs = new URLSearchParams({ start, end });
-  const url = `${API_BASE}/api/dashboard/insights?${qs.toString()}`;
-  return fetchJSON(url);
+  if (region) qs.set("region", region);
+  return fetchJSON(`${API_BASE}/api/dashboard/insights?${qs}`);
 }
