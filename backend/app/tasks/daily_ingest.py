@@ -73,11 +73,11 @@ def update_openmeteo_weather() -> None:
     """Fill in missing rows in openmeteo_weather using Open-Meteo API."""
     missing_range = _get_missing_range_for_openmeteo()
     if not missing_range:
-        logger.info("[legacy-weather] no missing range")
+        print("[legacy-weather] no missing range")
         return
 
     start, end = missing_range
-    logger.info("[legacy-weather] fetch begin start=%s end=%s", start, end)
+    print("[legacy-weather] fetch begin start=%s end=%s", start, end)
     df = fetch_open_meteo_range(start, end)
 
     if df.empty:
@@ -93,7 +93,7 @@ def update_openmeteo_weather() -> None:
 
     rows_to_insert = df[~df["datetime"].isin(existing_dates)]
 
-    logger.info(
+    print(
         "[legacy-weather] fetched_rows=%s existing_dates=%s rows_to_insert=%s",
         len(df),
         len(existing_dates),
@@ -112,18 +112,18 @@ def update_openmeteo_weather() -> None:
         db.session.add(record)
 
     db.session.commit()
-    logger.info("[legacy-weather] commit complete inserted=%s", len(rows_to_insert))
+    print("[legacy-weather] commit complete inserted=%s", len(rows_to_insert))
 
 
 def update_travis_fires_daily() -> None:
     """Fill in missing rows in travis_fires_daily using NASA FIRMS API."""
     missing_range = _get_missing_range_for_travis_fires()
     if not missing_range:
-        logger.info("[legacy-fires] no missing range")
+        print("[legacy-fires] no missing range")
         return
 
     start, end = missing_range
-    logger.info("[legacy-fires] fetch begin start=%s end=%s", start, end)
+    print("[legacy-fires] fetch begin start=%s end=%s", start, end)
     df = fetch_travis_fires_daily_range(start, end)
 
     if df.empty:
@@ -139,7 +139,7 @@ def update_travis_fires_daily() -> None:
 
     rows_to_insert = df[~df["acq_date"].isin(existing_dates)]
 
-    logger.info(
+    print(
         "[legacy-fires] fetched_rows=%s existing_dates=%s rows_to_insert=%s",
         len(df),
         len(existing_dates),
@@ -162,7 +162,7 @@ def update_travis_fires_daily() -> None:
         db.session.add(record)
 
     db.session.commit()
-    logger.info("[legacy-fires] commit complete inserted=%s", len(rows_to_insert))
+    print("[legacy-fires] commit complete inserted=%s", len(rows_to_insert))
 
 
 def _get_missing_range_for_weather_regional(region_id: int) -> Optional[Tuple[date, date]]:
@@ -204,7 +204,7 @@ def _get_missing_range_for_fires_daily(region_id: int) -> Optional[Tuple[date, d
 def update_weather_for_region(region: Region) -> None:
     """Fill in missing rows in weather_daily_regional for a specific region."""
     try:
-        logger.info(
+        print(
             "[regional-weather] start region_id=%s slug=%s name=%s center_lat=%s center_lon=%s",
             region.id,
             getattr(region, "slug", None),
@@ -215,7 +215,7 @@ def update_weather_for_region(region: Region) -> None:
 
         missing_range = _get_missing_range_for_weather_regional(region.id)
         if not missing_range:
-            logger.info(
+            print(
                 "[regional-weather] no missing range region_id=%s slug=%s",
                 region.id,
                 getattr(region, "slug", None),
@@ -223,7 +223,7 @@ def update_weather_for_region(region: Region) -> None:
             return
 
         start, end = missing_range
-        logger.info(
+        print(
             "[regional-weather] fetch begin region_id=%s slug=%s start=%s end=%s",
             region.id,
             getattr(region, "slug", None),
@@ -233,7 +233,7 @@ def update_weather_for_region(region: Region) -> None:
 
         df = fetch_open_meteo_range_for_region(region, start, end)
 
-        logger.info(
+        print(
             "[regional-weather] fetch result region_id=%s slug=%s rows=%s cols=%s columns=%s",
             region.id,
             getattr(region, "slug", None),
@@ -262,7 +262,7 @@ def update_weather_for_region(region: Region) -> None:
             .all()
         }
 
-        logger.info(
+        print(
             "[regional-weather] existing dates region_id=%s slug=%s count=%s",
             region.id,
             getattr(region, "slug", None),
@@ -271,7 +271,7 @@ def update_weather_for_region(region: Region) -> None:
 
         rows_to_insert = df[~df["date"].isin(existing_dates)]
 
-        logger.info(
+        print(
             "[regional-weather] rows_to_insert region_id=%s slug=%s insert_count=%s",
             region.id,
             getattr(region, "slug", None),
@@ -292,7 +292,7 @@ def update_weather_for_region(region: Region) -> None:
 
         db.session.commit()
 
-        logger.info(
+        print(
             "[regional-weather] commit complete region_id=%s slug=%s inserted=%s",
             region.id,
             getattr(region, "slug", None),
@@ -310,7 +310,7 @@ def update_weather_for_region(region: Region) -> None:
 def update_fires_for_region(region: Region) -> None:
     """Fill in missing rows in fires_daily for a specific region."""
     try:
-        logger.info(
+        print(
             "[regional-fires] start region_id=%s slug=%s name=%s",
             region.id,
             getattr(region, "slug", None),
@@ -319,7 +319,7 @@ def update_fires_for_region(region: Region) -> None:
 
         missing_range = _get_missing_range_for_fires_daily(region.id)
         if not missing_range:
-            logger.info(
+            print(
                 "[regional-fires] no missing range region_id=%s slug=%s",
                 region.id,
                 getattr(region, "slug", None),
@@ -327,7 +327,7 @@ def update_fires_for_region(region: Region) -> None:
             return
 
         start, end = missing_range
-        logger.info(
+        print(
             "[regional-fires] fetch begin region_id=%s slug=%s start=%s end=%s",
             region.id,
             getattr(region, "slug", None),
@@ -337,7 +337,7 @@ def update_fires_for_region(region: Region) -> None:
 
         df = fetch_fires_daily_range_for_region(region, start, end)
 
-        logger.info(
+        print(
             "[regional-fires] fetch result region_id=%s slug=%s rows=%s cols=%s columns=%s",
             region.id,
             getattr(region, "slug", None),
@@ -366,7 +366,7 @@ def update_fires_for_region(region: Region) -> None:
             .all()
         }
 
-        logger.info(
+        print(
             "[regional-fires] existing dates region_id=%s slug=%s count=%s",
             region.id,
             getattr(region, "slug", None),
@@ -375,7 +375,7 @@ def update_fires_for_region(region: Region) -> None:
 
         rows_to_insert = df[~df["acq_date"].isin(existing_dates)]
 
-        logger.info(
+        print(
             "[regional-fires] rows_to_insert region_id=%s slug=%s insert_count=%s",
             region.id,
             getattr(region, "slug", None),
@@ -400,7 +400,7 @@ def update_fires_for_region(region: Region) -> None:
 
         db.session.commit()
 
-        logger.info(
+        print(
             "[regional-fires] commit complete region_id=%s slug=%s inserted=%s",
             region.id,
             getattr(region, "slug", None),
@@ -418,14 +418,14 @@ def update_fires_for_region(region: Region) -> None:
 def update_all_regions() -> None:
     """Update weather and fires data for all regions."""
     regions = Region.query.all()
-    logger.info("[daily-ingest] loaded regions count=%s", len(regions))
+    print("[daily-ingest] loaded regions count=%s", len(regions))
 
     if not regions:
         logger.warning("[daily-ingest] no regions found")
         return
 
     for region in regions:
-        logger.info(
+        print(
             "[daily-ingest] processing region_id=%s slug=%s name=%s",
             region.id,
             getattr(region, "slug", None),
@@ -434,7 +434,7 @@ def update_all_regions() -> None:
         try:
             update_weather_for_region(region)
             update_fires_for_region(region)
-            logger.info(
+            print(
                 "[daily-ingest] completed region_id=%s slug=%s",
                 region.id,
                 getattr(region, "slug", None),
@@ -448,7 +448,7 @@ def update_all_regions() -> None:
             # Continue with other regions even if one fails
             db.session.rollback()
 
-    logger.info("[daily-ingest] regional ingest complete")
+    print("[daily-ingest] regional ingest complete")
 
 
 @shared_task
@@ -461,7 +461,7 @@ def run_daily_ingest() -> None:
     """
     app = create_app()
     with app.app_context():
-        logger.info("[daily-ingest] task start")
+        print("[daily-ingest] task start")
 
         # Update legacy tables (for backward compatibility with Austin/Travis)
         update_openmeteo_weather()
@@ -470,4 +470,4 @@ def run_daily_ingest() -> None:
         # Update new multi-region tables
         update_all_regions()
 
-        logger.info("[daily-ingest] task complete")
+        print("[daily-ingest] task complete")

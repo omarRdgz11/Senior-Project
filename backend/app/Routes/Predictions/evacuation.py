@@ -49,7 +49,7 @@ def score_location(lat: float, lng: float) -> float:
             return 0.0
 
         clipped = max(0.0, min(1.0, prob))
-        logger.info("score_location success | lat=%s lng=%s prob=%s clipped=%s", lat, lng, prob, clipped)
+        print("score_location success | lat=%s lng=%s prob=%s clipped=%s", lat, lng, prob, clipped)
         return clipped
 
     except Exception as e:
@@ -63,12 +63,12 @@ def find_safe_zone(lat: float, lng: float) -> dict:
     Return the first candidate whose risk score is below SAFE_THRESHOLD.
     If none are below the threshold, return the lowest-risk candidate found.
     """
-    logger.info("find_safe_zone start | origin=(%s,%s)", lat, lng)
+    print("find_safe_zone start | origin=(%s,%s)", lat, lng)
     cos_lat = math.cos(math.radians(lat))
     best = None  # (risk, direction, c_lat, c_lng, distance_miles)
 
     for distance_miles in SEARCH_DISTANCES:
-        logger.info("find_safe_zone checking distance=%s miles", distance_miles)
+        print("find_safe_zone checking distance=%s miles", distance_miles)
         candidates = []
 
         for direction, (dlat, dlng) in DIRECTIONS.items():
@@ -79,7 +79,7 @@ def find_safe_zone(lat: float, lng: float) -> dict:
 
         for direction, c_lat, c_lng in candidates:
             risk = score_location(c_lat, c_lng)
-            logger.info(
+            print(
                 "safe-zone candidate | direction=%s distance=%s candidate=(%s,%s) risk=%s",
                 direction, distance_miles, c_lat, c_lng, risk
             )
@@ -88,7 +88,7 @@ def find_safe_zone(lat: float, lng: float) -> dict:
                 best = (risk, direction, c_lat, c_lng, distance_miles)
 
             if risk < SAFE_THRESHOLD:
-                logger.info(
+                print(
                     "safe-zone selected (meets threshold) | direction=%s distance=%s risk=%s",
                     direction, distance_miles, risk
                 )
@@ -124,7 +124,7 @@ def get_route_to_direction(lat: float, lng: float, distances_miles: tuple, risk_
     Try all 8 directions at given distances until one routes successfully.
     Returns (safe_zone, route) or None if all fail.
     """
-    logger.info("get_route_to_direction start | origin=(%s,%s) distances=%s", lat, lng, distances_miles)
+    print("get_route_to_direction start | origin=(%s,%s) distances=%s", lat, lng, distances_miles)
     cos_lat = math.cos(math.radians(lat))
 
     for distance_miles in distances_miles:
@@ -141,7 +141,7 @@ def get_route_to_direction(lat: float, lng: float, distances_miles: tuple, risk_
                 "risk_level": risk_level,
             }
 
-            logger.info(
+            print(
                 "route-direction candidate | direction=%s distance=%s candidate=(%s,%s)",
                 direction, distance_miles, dest_lat, dest_lng
             )
@@ -150,7 +150,7 @@ def get_route_to_direction(lat: float, lng: float, distances_miles: tuple, risk_
                 route = get_driving_route(lat, lng, candidate["latitude"], candidate["longitude"])
                 candidate["distance_miles"] = round(route["distance_miles"], 1)
 
-                logger.info(
+                print(
                     "route-direction success | direction=%s route_distance=%s route_duration=%s geometry=%s",
                     direction,
                     route.get("distance_miles"),
@@ -205,7 +205,7 @@ def _fallback_straight_line_route(origin_lat, origin_lng, dest_lat, dest_lng) ->
 
 def get_driving_route(origin_lat, origin_lng, dest_lat, dest_lng) -> dict:
     """Call OpenRouteService and return GeoJSON geometry + summary."""
-    logger.info(
+    print(
         "get_driving_route start | origin=(%s,%s) dest=(%s,%s) ors_key_present=%s",
         origin_lat, origin_lng, dest_lat, dest_lng, bool(ORS_API_KEY and ORS_API_KEY.strip())
     )
@@ -222,7 +222,7 @@ def get_driving_route(origin_lat, origin_lng, dest_lat, dest_lng) -> dict:
         "radiuses": [5000, 5000],
     }
 
-    logger.info("ORS request payload | %s", payload)
+    print("ORS request payload | %s", payload)
 
     response = requests.post(
         url,
@@ -231,7 +231,7 @@ def get_driving_route(origin_lat, origin_lng, dest_lat, dest_lng) -> dict:
         timeout=15
     )
 
-    logger.info("ORS response status=%s", response.status_code)
+    print("ORS response status=%s", response.status_code)
 
     if response.status_code != 200:
         txt = response.text or ""
@@ -281,7 +281,7 @@ def get_driving_route(origin_lat, origin_lng, dest_lat, dest_lng) -> dict:
         "duration_minutes": dur_s / 60
     }
 
-    logger.info(
+    print(
         "get_driving_route success | distance_miles=%s duration_minutes=%s geometry=%s",
         route["distance_miles"],
         route["duration_minutes"],
@@ -294,12 +294,12 @@ def get_driving_route(origin_lat, origin_lng, dest_lat, dest_lng) -> dict:
 @bp_evacuation.route("/evacuation-route", methods=["POST"])
 def evacuation_route():
     try:
-        logger.info("===== EVACUATION ROUTE CALLED =====")
-        logger.info("Headers: %s", dict(request.headers))
-        logger.info("Raw body: %s", request.data)
+        print("===== EVACUATION ROUTE CALLED =====")
+        print("Headers: %s", dict(request.headers))
+        print("Raw body: %s", request.data)
 
         body = request.get_json(silent=True)
-        logger.info("Parsed body: %s", body)
+        print("Parsed body: %s", body)
 
         if not body or "lat" not in body or "lng" not in body:
             logger.warning("Missing lat/lng in request body")
@@ -317,16 +317,16 @@ def evacuation_route():
             return jsonify({"error": "Coordinates out of valid range"}), 400
 
         demo_mode = body.get("demo") in (True, "true", 1, "1")
-        logger.info("Request values | lat=%s lng=%s demo_mode=%s", lat, lng, demo_mode)
+        print("Request values | lat=%s lng=%s demo_mode=%s", lat, lng, demo_mode)
 
         current_risk = score_location(lat, lng)
-        logger.info("Model risk before override=%s", current_risk)
+        print("Model risk before override=%s", current_risk)
 
         if demo_mode:
             current_risk = 0.65
-            logger.info("Demo override applied | current_risk=%s", current_risk)
+            print("Demo override applied | current_risk=%s", current_risk)
 
-        logger.info(
+        print(
             "Threshold comparison | current_risk=%s threshold=%s evacuate=%s",
             current_risk,
             EVACUATION_THRESHOLD,
@@ -334,7 +334,7 @@ def evacuation_route():
         )
 
         if current_risk < EVACUATION_THRESHOLD:
-            logger.info("LOW RISK branch returning no evacuation")
+            print("LOW RISK branch returning no evacuation")
             return jsonify({
                 "should_evacuate": False,
                 "current_risk": current_risk,
@@ -343,28 +343,28 @@ def evacuation_route():
                 "message": "Your area is currently at low fire risk. No evacuation needed."
             })
 
-        logger.info("HIGH RISK branch entered")
+        print("HIGH RISK branch entered")
 
         safe_zone = None
         route = None
 
         if demo_mode:
-            logger.info("Demo mode routing path")
+            print("Demo mode routing path")
             result = get_route_to_direction(lat, lng, (0.5, 1, 2, 3, 5), risk_level=0.10)
             if result:
                 safe_zone, route = result
-                logger.info("Demo route result success | safe_zone=%s", safe_zone)
+                print("Demo route result success | safe_zone=%s", safe_zone)
             else:
                 logger.warning("Demo route result returned None")
         else:
-            logger.info("Production/non-demo ML safe-zone path")
+            print("Production/non-demo ML safe-zone path")
             try:
                 safe_zone = find_safe_zone(lat, lng)
-                logger.info("find_safe_zone returned | %s", safe_zone)
+                print("find_safe_zone returned | %s", safe_zone)
 
                 try:
                     route = get_driving_route(lat, lng, safe_zone["latitude"], safe_zone["longitude"])
-                    logger.info(
+                    print(
                         "Direct route success | distance=%s duration=%s geometry=%s",
                         route.get("distance_miles"),
                         route.get("duration_minutes"),
@@ -375,7 +375,7 @@ def evacuation_route():
                     result = get_route_to_direction(lat, lng, SEARCH_DISTANCES, risk_level=safe_zone["risk_level"])
                     if result:
                         safe_zone, route = result
-                        logger.info("Directional fallback success | safe_zone=%s", safe_zone)
+                        print("Directional fallback success | safe_zone=%s", safe_zone)
                     else:
                         logger.warning("Directional fallback returned None")
 
@@ -384,7 +384,7 @@ def evacuation_route():
                 result = get_route_to_direction(lat, lng, SEARCH_DISTANCES, risk_level=0.20)
                 if result:
                     safe_zone, route = result
-                    logger.info("Emergency fallback success | safe_zone=%s", safe_zone)
+                    print("Emergency fallback success | safe_zone=%s", safe_zone)
                 else:
                     logger.warning("Emergency fallback returned None")
 
@@ -394,7 +394,7 @@ def evacuation_route():
                 "error": "Could not find a routable evacuation route from your location. Try a different area or check back later."
             }), 500
 
-        logger.info(
+        print(
             "Returning evacuation success | risk=%s safe_zone=%s route_distance=%s route_duration=%s",
             current_risk,
             safe_zone,
