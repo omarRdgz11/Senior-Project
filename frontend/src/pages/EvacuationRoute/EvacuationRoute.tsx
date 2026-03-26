@@ -131,6 +131,11 @@ const EvacuationRoute: React.FC = () => {
         mapRef.current.fitBounds(routeLayer.getBounds());
     };
 
+    console.log("🧠 Evacuation Data in component:", evacuationData);
+    console.log("🚨 Should evacuate:", evacuationData?.should_evacuate);
+    console.log("🗺 Route:", evacuationData?.route);
+    console.log("📍 Safe zone:", evacuationData?.safe_zone);
+
     return (
         <div style={styles.container}>
             <h2 style={styles.title}>Evacuation Routes</h2>

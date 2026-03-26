@@ -112,6 +112,8 @@ export async function getEvacuationRoute(
       lng: location.lng,
       demo: options?.demo
     });
+
+    console.log("🌐 Request URL:", "/api/evacuation-route");
   
     const response = await fetch("/api/evacuation-route", {
       method: "POST",
@@ -126,6 +128,8 @@ export async function getEvacuationRoute(
     });
   
     const data = await response.json();
+    console.log("📦 Raw response status:", response.status);
+    console.log("📦 Backend response:", data);
   
     console.log("Backend response:", data);
   
