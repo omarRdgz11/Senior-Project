@@ -3,12 +3,20 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { styles } from './EvacuationRoute.styles';
 import { getEvacuationRoute, type EvacuationData } from '../../api/evacuation';
+import { colors } from '../../styles/colors';
 
 // Obtain the latitude and longitude of the individual
 interface Location {
     lat: number;
     lng: number;
 }
+
+const markerIcon = L.icon({
+  iconUrl: "/images/Marker-Icon.png",
+  iconSize: [28, 38],
+  iconAnchor: [14, 28],
+  popupAnchor: [0, -28],
+});
 
 // Safely format risk as percentage (handles NaN, null, undefined)
 function formatRiskPercent(risk: number | null | undefined): string {
@@ -80,7 +88,7 @@ const EvacuationRoute: React.FC = () => {
 
             // Drop a marker at the user's location
             if (mapRef.current) {
-                L.marker([userLocation.lat, userLocation.lng])
+                L.marker([userLocation.lat, userLocation.lng], {icon: markerIcon})
                     .addTo(mapRef.current)
                     .bindPopup('Your Location')
                     .openPopup();
@@ -123,7 +131,7 @@ const EvacuationRoute: React.FC = () => {
             style: { color: '#FF0000', weight: 6, opacity: 0.8 }
         }).addTo(mapRef.current);
 
-        L.marker([data.safe_zone.latitude, data.safe_zone.longitude])
+        L.marker([data.safe_zone.latitude, data.safe_zone.longitude], {icon: markerIcon})
             .addTo(mapRef.current)
             .bindPopup(`Safe Zone (${data.safe_zone.direction})`)
             .openPopup();
@@ -143,8 +151,8 @@ const EvacuationRoute: React.FC = () => {
                 Get personalized evacuation routes based on current wildfire risk in your area.
             </p>
 
-            <div style={{ padding: '12px 16px', background: '#fff8e6', borderRadius: 8, marginBottom: 16, border: '1px solid #ffd966' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontWeight: 500 }}>
+            <div style={{ padding: '1rem', background: colors.cream, borderRadius: '1rem', margin: '16px auto', border: '1px solid colors.olive' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontWeight: 500, fontFamily: "'Source Sans 3', sans-serif", color: colors.stone,}}>
                     <input
                         type="checkbox"
                         checked={demoMode}
@@ -155,12 +163,12 @@ const EvacuationRoute: React.FC = () => {
                     />
                     <span>Demo mode: show evacuation scenario (simulated high risk)</span>
                 </label>
-                <p style={{ margin: '6px 0 0 26px', fontSize: 13, color: '#666' }}>
+                <p style={{ margin: '6px 0 0 26px', fontSize: 13, color: colors.stone, fontFamily: "'Source Sans 3', sans-serif", }}>
                     Check this to see the full evacuation flow regardless of actual risk.
                 </p>
             </div>
 
-            <button
+            <button 
                 onClick={handleGetEvacuationRoute}
                 disabled={loading}
                 style={loading ? styles.buttonDisabled : styles.button}

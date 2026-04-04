@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { colors } from "../../styles/colors";
 
 interface Styles {
     container: CSSProperties;
@@ -19,44 +20,52 @@ interface Styles {
 
 export const styles: Styles = {
     container: {
-        padding: '20px',
-        maxWidth: '1200px',
-        margin: '0 auto'
+        backgroundColor: colors.green,
+        fontFamily: "'Figtree', sans-serif",
+        color: colors.brown,
+        padding: "2rem",
     },
     title: {
-        color: '#333',
-        marginBottom: '10px'
+        fontSize: "2rem",
+        fontWeight: 700,
+        color: colors.brown,
+        marginBottom: "0.5rem",
     },
     subtitle: {
-        color: '#666',
-        marginBottom: '20px'
+        color: colors.forest,
+        fontSize: "1.2rem",
+        fontFamily: "'Source Sans 3', sans-serif",
     },
     button: {
-        padding: '15px 30px',
-        fontSize: '18px',
-        background: '#ff6b6b',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        cursor: 'pointer',
-        marginBottom: '20px'
+        padding: "0.75rem",
+        border: "none",
+        backgroundColor: colors.red,
+        color: colors.cream,
+        fontWeight: 600,
+        fontSize: "1rem",
+        cursor: "pointer",
+        transition: "0.2s",
+        borderRadius: "1rem",
+        margin: "0 auto",
     },
+
     buttonDisabled: {
-        padding: '15px 30px',
-        fontSize: '18px',
-        background: '#ccc',
-        color: 'white',
-        border: 'none',
-        borderRadius: '8px',
-        cursor: 'not-allowed',
-        marginBottom: '20px'
+        padding: "0.75rem",
+        border: "none",
+        backgroundColor: colors.stone,
+        color: colors.cream,
+        fontWeight: 600,
+        fontSize: "1rem",
+        cursor: "not-allowed",
+        borderRadius: "1rem",
+        margin: "0 auto",
     },
     errorBox: {
         padding: '15px',
         background: '#f8d7da',
         color: '#721c24',
         borderRadius: '5px',
-        marginBottom: '20px',
+        margin: '20px auto',
         borderLeft: '4px solid #f5c6cb'
     },
     infoBox: {
@@ -64,46 +73,54 @@ export const styles: Styles = {
         background: '#d1ecf1',
         color: '#0c5460',
         borderRadius: '5px',
-        marginBottom: '20px',
+        margin: '20px',
         borderLeft: '4px solid #bee5eb'
     },
     alertBoxDanger: {
         padding: '20px',
         background: '#ff4444',
-        color: 'white',
+        color: colors.cream,
         borderRadius: '8px',
-        marginBottom: '20px'
+        margin: '20px auto',
+        fontFamily: "'Source Sans 3', sans-serif",
     },
     alertBoxSafe: {
         padding: '20px',
         background: '#44ff44',
         color: '#004400',
         borderRadius: '8px',
-        marginBottom: '20px'
+        margin: '20px auto',
+        fontFamily: "'Source Sans 3', sans-serif",
     },
     alertTitle: {
-        marginTop: 0,
-        marginBottom: '15px'
+        color: colors.cream,
+        fontSize: "1.4rem",
+        fontWeight: 600,
+        fontFamily: "'Source Sans 3', sans-serif",
     },
     mapContainer: {
         height: '500px',
-        width: '100%',
-        border: '2px solid #ddd',
-        borderRadius: '8px',
-        marginBottom: '20px'
+        border: '1px solid #ddd',
+        borderRadius: '2px',
+        margin: '20px auto'
     },
     instructionsBox: {
-        padding: '15px',
-        background: '#f8f9fa',
-        borderRadius: '5px',
-        borderLeft: '4px solid #dee2e6'
+        backgroundColor: colors.cream,
+        borderRadius: "1rem",
+        borderStyle: "solid",
+        borderWidth: "2px",
+        borderColor: colors.olive,
+        padding: "1rem",
+        margin: '20px auto'
     },
     instructionsTitle: {
-        marginTop: 0,
-        color: '#495057'
+        color: colors.forest,
+        fontSize: "1.2rem",
+        fontFamily: "'Source Sans 3', sans-serif",
     },
     instructionsList: {
-        marginBottom: 0,
-        color: '#6c757d'
+        color: colors.stone,
+        fontSize: "1rem",
+        fontFamily: "'Source Sans 3', sans-serif",
     }
 };
