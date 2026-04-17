@@ -92,4 +92,57 @@ export const styles: Record<string, CSSProperties> = {
     fontWeight: 600,
     textAlign: "center",
   },
+
+  toastWrapper: {
+    position: "fixed",
+    top: "24px",
+    right: "24px",
+    zIndex: 1000,
+    maxWidth: "380px",
+    width: "calc(100% - 32px)",
+  },
+
+  toastCard: {
+    backgroundColor: "#fff7ed",
+    border: "1px solid #fdba74",
+    borderRadius: "16px",
+    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.12)",
+    padding: "16px",
+  },
+
+  toastHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "10px",
+  },
+
+  toastTitle: {
+    fontSize: "16px",
+    fontWeight: 700,
+    color: "#9a3412",
+  },
+
+  toastCloseButton: {
+    border: "none",
+    background: "transparent",
+    fontSize: "22px",
+    lineHeight: 1,
+    cursor: "pointer",
+    color: "#9a3412",
+    padding: 0,
+  },
+
+  toastBody: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+
+  toastText: {
+    margin: 0,
+    fontSize: "14px",
+    color: "#7c2d12",
+  },
+
 };
