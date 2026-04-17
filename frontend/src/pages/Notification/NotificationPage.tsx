@@ -1,20 +1,20 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { styles } from "./NotificationPage.styles";
+
+type DemoAlert = {
+  id: number;
+  title: string;
+  location: string;
+  date: string;
+  riskLevel: string;
+  conditions: string;
+};
 
 export default function Notifications() {
   const [phone, setPhone] = useState("");
   const [zip, setZip] = useState("");
   const [optIn, setOptIn] = useState(false);
-
-  async function requestPermission() {
-    if (!("Notification" in window)) {
-      alert("This browser does not support notifications.");
-      return false;
-    }
-
-    const permission = await Notification.requestPermission();
-    return permission === "granted";
-  }
+  const [demoAlert, setDemoAlert] = useState<DemoAlert | null>(null);
 
   async function handleSubscribe() {
     if (!optIn) {
@@ -22,35 +22,11 @@ export default function Notifications() {
       return;
     }
 
-    const granted = await requestPermission();
-
-    if (!granted) {
-      alert("Notification permission denied.");
-      return;
-    }
-
+    // Keeping backend/demo subscription behavior untouched
     alert("Subscribed to fire alerts!");
   }
 
-  async function triggerDemoAlert() {
-    console.log("Trigger clicked");
-    if (!("Notification" in window)) {
-      alert("This browser does not support notifications.");
-      return;
-    }
-
-    let permission = Notification.permission;
-
-    // Ask for permission if not already granted
-    if (permission !== "granted") {
-      permission = await Notification.requestPermission();
-    }
-
-    if (permission !== "granted") {
-      alert("Notifications are blocked. Please allow them.");
-      return;
-    }
-
+  function triggerDemoAlert() {
     const now = new Date();
     const formattedDate = now.toLocaleString();
 
@@ -60,16 +36,64 @@ export default function Notifications() {
       Math.floor(Math.random() * 4)
     ];
 
-    new Notification("🔥 Fire Risk Alert", {
-      body: `Location: ${location}
-Date: ${formattedDate}
-Risk Level: ${riskProbability}
-Conditions: ${weatherConditions}`,
+    setDemoAlert({
+      id: Date.now(),
+      title: "🔥 Fire Risk Alert",
+      location,
+      date: formattedDate,
+      riskLevel: riskProbability,
+      conditions: weatherConditions,
     });
   }
 
+  function dismissDemoAlert() {
+    setDemoAlert(null);
+  }
+
+  useEffect(() => {
+    if (!demoAlert) return;
+
+    const timer = setTimeout(() => {
+      setDemoAlert(null);
+    }, 7000);
+
+    return () => clearTimeout(timer);
+  }, [demoAlert]);
+
   return (
     <div style={styles.container}>
+      {demoAlert && (
+        <div style={styles.toastWrapper}>
+          <div style={styles.toastCard}>
+            <div style={styles.toastHeader}>
+              <span style={styles.toastTitle}>{demoAlert.title}</span>
+              <button
+                style={styles.toastCloseButton}
+                onClick={dismissDemoAlert}
+                aria-label="Dismiss alert"
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={styles.toastBody}>
+              <p style={styles.toastText}>
+                <strong>Location:</strong> {demoAlert.location}
+              </p>
+              <p style={styles.toastText}>
+                <strong>Date:</strong> {demoAlert.date}
+              </p>
+              <p style={styles.toastText}>
+                <strong>Risk Level:</strong> {demoAlert.riskLevel}
+              </p>
+              <p style={styles.toastText}>
+                <strong>Conditions:</strong> {demoAlert.conditions}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={styles.card}>
         <h1 style={styles.title}>Fire Alerts</h1>
 
@@ -87,25 +111,30 @@ Conditions: ${weatherConditions}`,
           onChange={(e) => setZip(e.target.value)}
         />
 
-        <label style={{ fontSize: "14px", display: "flex", alignItems: "center", marginTop: "10px" }}>
+        <label
+          style={{
+            fontSize: "14px",
+            display: "flex",
+            alignItems: "flex-start",
+            marginTop: "10px",
+            lineHeight: 1.4,
+          }}
+        >
           <input
             type="checkbox"
             checked={optIn}
             onChange={(e) => setOptIn(e.target.checked)}
-            style={{ marginRight: "8px" }}
+            style={{ marginRight: "8px", marginTop: "3px" }}
           />
-          I agree to receive fire alert notifications via SMS and browser alerts. Message & data rates may apply.
+          I agree to receive fire alert notifications via SMS and website alerts.
+          Message & data rates may apply.
         </label>
 
         <button style={styles.button} onClick={handleSubscribe}>
           Subscribe
         </button>
 
-        {/* NEW DEMO BUTTON */}
-        <button
-          style={{ ...styles.button}}
-          onClick={triggerDemoAlert}
-        >
+        <button style={styles.button} onClick={triggerDemoAlert}>
           Trigger Demo Alert
         </button>
       </div>
